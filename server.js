@@ -161,6 +161,36 @@ io.on('connection', (socket) => {
     io.emit('settings-updated', data);
   });
 
+  // Envia histórico de chat ao conectar
+  if (lastYtMessages.length > 0) {
+    socket.emit('yt-chat-messages', lastYtMessages);
+  }
+
+  // YouTube Chat
+  socket.on('yt-start', (config) => {
+    startYTPolling(config.apiKey, config.liveChatId);
+    socket.emit('yt-status', { active: true });
+  });
+
+  socket.on('yt-stop', () => {
+    stopYTPolling();
+    lastYtMessages = [];
+    io.emit('yt-status', { active: false });
+  });
+
+  socket.on('yt-status-request', () => {
+    socket.emit('yt-status', { active: !!ytPolling });
+  });
+
+  socket.on('trigger-show-comment', (data) => {
+    console.log(`[comment] ${data.author}: ${data.message}`);
+    io.emit('show-comment', data);
+  });
+
+  socket.on('trigger-hide-comment', () => {
+    io.emit('hide-comment');
+  });
+
   socket.on('trigger-clear', () => {
     console.log('[clear]');
     io.emit('clear-all');
@@ -171,9 +201,79 @@ io.on('connection', (socket) => {
   });
 });
 
+// ============================================
+// YOUTUBE LIVE CHAT INTEGRATION
+// ============================================
+
+let ytPolling = null;
+let ytConfig = { apiKey: '', liveChatId: '' };
+let lastYtMessages = []; // últimas 50 mensagens
+
+// Inicia o polling do chat do YouTube
+function startYTPolling(apiKey, liveChatId) {
+  stopYTPolling();
+  if (!apiKey || !liveChatId) {
+    console.log('[yt-chat] Config inválida - precisa de apiKey e liveChatId');
+    return;
+  }
+  ytConfig = { apiKey, liveChatId };
+  console.log(`[yt-chat] Iniciando polling...`);
+
+  let nextPageToken = null;
+  let pollInterval = 5000;
+
+  async function poll() {
+    try {
+      let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&maxResults=50&key=${apiKey}`;
+      if (nextPageToken) url += `&pageToken=${nextPageToken}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.error) {
+        console.log('[yt-chat] Erro API:', data.error.message);
+        ytPolling = setTimeout(poll, pollInterval);
+        return;
+      }
+
+      nextPageToken = data.nextPageToken;
+      pollInterval = data.pollingIntervalMillis || 5000;
+
+      if (data.items && data.items.length > 0) {
+        const newMessages = data.items.map(item => ({
+          id: item.id,
+          author: item.authorDetails.displayName,
+          message: item.snippet.displayMessage,
+          timestamp: new Date(item.snippet.publishedAt).toLocaleTimeString(),
+          isOwner: item.authorDetails.isChatOwner
+        }));
+
+        lastYtMessages = [...newMessages, ...lastYtMessages].slice(0, 50);
+        io.emit('yt-chat-messages', newMessages);
+      }
+    } catch (err) {
+      console.log('[yt-chat] Erro polling:', err.message);
+    }
+    ytPolling = setTimeout(poll, pollInterval);
+  }
+
+  // Primeira chamada
+  poll();
+}
+
+function stopYTPolling() {
+  if (ytPolling) { clearTimeout(ytPolling); ytPolling = null; }
+  console.log('[yt-chat] Polling parado');
+}
+
+// ============================================
+// START SERVER
+// ============================================
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
   console.log(`Painel: http://localhost:${PORT}/control`);
   console.log(`Display: http://localhost:${PORT}/display`);
 });
+

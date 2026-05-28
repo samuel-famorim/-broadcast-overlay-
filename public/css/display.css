@@ -1024,6 +1024,38 @@ body {
 }
 
 /* ============================================
+   COMENTÁRIO DO CHAT (barra larga)
+   ============================================ */
+
+#comment-overlay {
+  bottom: 40px;
+  left: -1200px;
+  z-index: 35;
+  animation: none;
+}
+
+#comment-overlay.active {
+  animation: commentIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+#comment-overlay.hiding {
+  animation: commentOut 0.4s ease-in forwards;
+}
+
+#comment-overlay .lt-sports-name { font-size: 26px; }
+#comment-overlay .lt-sports-role { font-size: 20px; font-weight: 800; }
+
+@keyframes commentIn {
+  from { left: -1200px; opacity: 0; }
+  to   { left: 40px; opacity: 1; }
+}
+
+@keyframes commentOut {
+  from { left: 40px; opacity: 1; }
+  to   { left: -1200px; opacity: 0; }
+}
+
+/* ============================================
    CONTAGEM REGRESSIVA
    ============================================ */
 

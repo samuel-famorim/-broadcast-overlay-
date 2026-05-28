@@ -309,6 +309,81 @@ header {
   50% { opacity: 0.4; transform: scale(1.6); }
 }
 
+/* YouTube Chat Messages */
+.yt-msg {
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.yt-msg:hover {
+  background: rgba(255,51,102,0.06);
+  border-color: rgba(255,51,102,0.3);
+}
+.yt-msg.active {
+  background: rgba(255,51,102,0.12);
+  border-color: #FF3366;
+  box-shadow: 0 0 12px rgba(255,51,102,0.2);
+}
+.fav-msg.active {
+  background: rgba(255,215,0,0.12);
+  border-color: #FFD700;
+  box-shadow: 0 0 12px rgba(255,215,0,0.2);
+}
+.yt-msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.yt-msg-header strong {
+  font-size: 13px;
+  color: #FF3366;
+  font-weight: 700;
+}
+.yt-msg-header small {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.yt-msg-text {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.4;
+}
+.yt-msg-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+.yt-fav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.yt-fav-btn:hover {
+  background: rgba(255,215,0,0.15);
+  transform: scale(1.2);
+}
+
+.chat-panel { border-color: rgba(255,51,102,0.2); }
+.fav-msg { cursor: pointer; }
+.fav-msg:hover { border-color: rgba(255,215,0,0.4); background: rgba(255,215,0,0.04); }
+
+.yt-favorites-section {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(255,215,0,0.03);
+  border: 1px solid rgba(255,215,0,0.12);
+  border-radius: 12px;
+}
+
 /* ============================================
    PRESETS
    ============================================ */

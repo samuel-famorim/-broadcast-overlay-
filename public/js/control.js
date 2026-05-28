@@ -145,6 +145,8 @@ function loadAllPresets() {
   renderMedalEditor();
   renderProblemStatsEditor();
   loadSettings();
+  loadYTConfig();
+  renderYTFavorites();
   injectLiveDots();
 }
 
@@ -157,7 +159,9 @@ function injectLiveDots() {
     'sports-lt-toggle': 'sports-lt',
     'problem-lt-toggle': 'problem-lt',
     'medaltable-toggle': 'medal-table',
-    'problemstats-toggle': 'problem-stats'
+    'problemstats-toggle': 'problem-stats',
+    'yt-chat-toggle': 'yt-chat',
+    'comment-display-toggle': 'comment-display'
   };
   Object.entries(toggles).forEach(([checkboxId, liveId]) => {
     const cb = document.getElementById(checkboxId);
@@ -973,6 +977,211 @@ function applyProblemStats() {
 function toggleProblemStats(active) {
   if (active) { applyProblemStats(); setLiveIndicator('problem-stats', true); }
   else { socket.emit('trigger-problem-stats-hide'); setLiveIndicator('problem-stats', false); toast('Tabela escondida', 'success'); }
+}
+
+// ============================================
+// YOUTUBE CHAT
+// ============================================
+
+const YT_CONFIG_KEY = 'broadcast_yt_config';
+const YT_FAVORITES_KEY = 'broadcast_yt_favorites';
+let activeCommentId = null;
+
+function getYTConfig() {
+  try { return JSON.parse(localStorage.getItem(YT_CONFIG_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+function saveYTConfig(config) {
+  localStorage.setItem(YT_CONFIG_KEY, JSON.stringify(config));
+}
+
+function getYTFavorites() {
+  try { return JSON.parse(localStorage.getItem(YT_FAVORITES_KEY)) || []; }
+  catch (e) { return []; }
+}
+
+function saveYTFavorite(author, message) {
+  const favs = getYTFavorites();
+  // Evita duplicatas
+  if (favs.find(f => f.message === message && f.author === author)) {
+    toast('Já está nos favoritos!', 'error');
+    return;
+  }
+  favs.unshift({ author, message, time: new Date().toLocaleTimeString() });
+  localStorage.setItem(YT_FAVORITES_KEY, JSON.stringify(favs.slice(0, 30)));
+  renderYTFavorites();
+  toast('⭐ Favorito salvo!', 'success');
+}
+
+function clearYTFavorites() {
+  if (!confirm('Limpar todos os favoritos?')) return;
+  localStorage.removeItem(YT_FAVORITES_KEY);
+  renderYTFavorites();
+  toast('Favoritos limpos!', 'success');
+}
+
+function clickFavorite(author, message, el) {
+  // Destaca visualmente
+  document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
+  if (el) el.classList.add('active');
+  // Envia pro display
+  socket.emit('trigger-show-comment', { author, message });
+  document.getElementById('comment-display-toggle').checked = true;
+  setLiveIndicator('comment-display', true);
+}
+
+function renderYTFavorites() {
+  const container = document.getElementById('yt-favorites-list');
+  const section = document.getElementById('yt-favorites');
+  if (!container || !section) return;
+
+  const favs = getYTFavorites();
+  if (favs.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  container.innerHTML = favs.map((f, i) => `
+    <div class="yt-msg fav-msg" style="border-color:rgba(255,215,0,0.15);" data-author="${f.author.replace(/"/g,'&quot;')}" data-message="${f.message.replace(/"/g,'&quot;')}">
+      <div class="yt-msg-header">
+        <strong style="color:#FFD700;">⭐ ${f.author}</strong>
+        <small>${f.time}</small>
+      </div>
+      <div class="yt-msg-text">${f.message}</div>
+    </div>
+  `).join('');
+
+  // Adiciona eventos via JS (mais seguro que inline)
+  container.querySelectorAll('.fav-msg').forEach(el => {
+    el.onclick = () => {
+      const author = el.dataset.author;
+      const message = el.dataset.message;
+      clickFavorite(author, message, el);
+    };
+  });
+}
+
+function connectYTChat() {
+  const apiKey = document.getElementById('yt-apikey').value.trim();
+  const liveChatId = document.getElementById('yt-chatid').value.trim();
+
+  if (!apiKey || !liveChatId) {
+    toast('Preencha API Key e Live Chat ID!', 'error');
+    return;
+  }
+
+  saveYTConfig({ apiKey, liveChatId });
+  socket.emit('yt-start', { apiKey, liveChatId });
+  document.getElementById('yt-chat-toggle').checked = true;
+  setLiveIndicator('yt-chat', true);
+  toast('🔌 Conectando ao chat do YouTube...', 'success');
+}
+
+function toggleYTChat(active) {
+  if (active) {
+    connectYTChat();
+  } else {
+    socket.emit('yt-stop');
+    setLiveIndicator('yt-chat', false);
+    document.getElementById('yt-messages').innerHTML =
+      '<p style="color:var(--text-dim);font-size:13px;text-align:center;padding:20px;">Chat desconectado.</p>';
+    toast('Chat parado', 'success');
+  }
+}
+
+// Mostrar/esconder comentário no display (toggle)
+function toggleCommentDisplay(active) {
+  if (active) {
+    const msg = document.querySelector('.yt-msg.active');
+    if (!msg) { document.getElementById('comment-display-toggle').checked = false; toast('Clique em um comentário primeiro!', 'error'); return; }
+    setLiveIndicator('comment-display', true);
+  } else {
+    socket.emit('trigger-hide-comment');
+    setLiveIndicator('comment-display', false);
+    document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
+    activeCommentId = null;
+  }
+}
+
+// Quando o display esconde o comentário, sincroniza toggle
+socket.on('comment-hidden', () => {
+  document.getElementById('comment-display-toggle').checked = false;
+  setLiveIndicator('comment-display', false);
+  document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
+  activeCommentId = null;
+});
+
+// Recebe mensagens do chat
+socket.on('yt-chat-messages', (messages) => {
+  const container = document.getElementById('yt-messages');
+  if (!container) return;
+
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'yt-msg';
+    div.id = 'msg-' + msg.id;
+    div.title = 'Clique para mostrar no display';
+
+    const header = document.createElement('div');
+    header.className = 'yt-msg-header';
+    const strong = document.createElement('strong');
+    strong.textContent = msg.author;
+    const small = document.createElement('small');
+    small.textContent = msg.timestamp;
+    header.appendChild(strong);
+    header.appendChild(small);
+
+    const text = document.createElement('div');
+    text.className = 'yt-msg-text';
+    text.textContent = msg.message;
+
+    const actions = document.createElement('div');
+    actions.className = 'yt-msg-actions';
+    const favBtn = document.createElement('button');
+    favBtn.className = 'yt-fav-btn';
+    favBtn.textContent = '⭐';
+    favBtn.title = 'Salvar favorito';
+    favBtn.onclick = (e) => {
+      e.stopPropagation();
+      saveYTFavorite(msg.author, msg.message);
+    };
+    actions.appendChild(favBtn);
+
+    div.appendChild(header);
+    div.appendChild(text);
+    div.appendChild(actions);
+
+    div.onclick = () => {
+      document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
+      div.classList.add('active');
+      activeCommentId = msg.id;
+      socket.emit('trigger-show-comment', { author: msg.author, message: msg.message, id: msg.id });
+      document.getElementById('comment-display-toggle').checked = true;
+      setLiveIndicator('comment-display', true);
+    };
+
+    container.prepend(div);
+  });
+
+  while (container.children.length > 100) {
+    container.lastChild.remove();
+  }
+});
+
+// Status do YouTube
+socket.on('yt-status', (data) => {
+  const toggle = document.getElementById('yt-chat-toggle');
+  if (toggle) toggle.checked = data.active;
+  if (data.active) setLiveIndicator('yt-chat', true);
+});
+
+// Carrega config salva
+function loadYTConfig() {
+  const config = getYTConfig();
+  if (config.apiKey) document.getElementById('yt-apikey').value = config.apiKey;
+  if (config.liveChatId) document.getElementById('yt-chatid').value = config.liveChatId;
 }
 
 // ============================================

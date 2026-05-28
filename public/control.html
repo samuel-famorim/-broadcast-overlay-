@@ -185,6 +185,7 @@
           </div>
           </section>
         </details>
+
       </div>
 
       <!-- ============================================ -->
@@ -525,9 +526,76 @@
               <button class="btn btn-clear" onclick="resetProblemStats()" style="flex:1;">🧹 Resetar</button>
             </div>
           </div>
-
-          </div>
         </section>
+
+        <!-- Chat YouTube -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">💬 Chat ao Vivo</summary>
+          <section class="panel chat-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+            <div class="toggle-row">
+              <span class="toggle-label">Chat Ativo</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="yt-chat-toggle" onchange="toggleYTChat(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="live-dot" id="live-yt-chat"></span>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>YouTube API Key</label>
+                <input type="text" id="yt-apikey" placeholder="AIza..." maxlength="50">
+              </div>
+              <div class="input-group">
+                <label>Live Chat ID</label>
+                <input type="text" id="yt-chatid" placeholder="ID do chat ao vivo" maxlength="80">
+              </div>
+            </div>
+            <button class="btn btn-sports" onclick="connectYTChat()">🔌 Conectar ao Chat</button>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Exibir no Display</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="comment-display-toggle" onchange="toggleCommentDisplay(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="live-dot" id="live-comment-display"></span>
+            </div>
+
+            <details style="margin-top:12px;font-size:12px;color:var(--text-dim);">
+              <summary style="cursor:pointer;font-weight:700;color:rgba(255,255,255,0.5);">📖 Como obter as credenciais</summary>
+              <div style="margin-top:8px;line-height:1.6;background:rgba(0,0,0,0.2);padding:12px 16px;border-radius:8px;">
+                <strong>API Key:</strong><br>
+                1. Acesse <a href="https://console.cloud.google.com" target="_blank" style="color:#00BFFF;">console.cloud.google.com</a><br>
+                2. Crie um projeto → APIs e Serviços → Biblioteca<br>
+                3. Pesquise e habilite <b>YouTube Data API v3</b><br>
+                4. Vá em Credenciais → Criar credencial → <b>Chave de API</b><br>
+                <br>
+                <strong>Live Chat ID:</strong><br>
+                1. No YouTube Studio, inicie uma transmissão ao vivo<br>
+                2. O Live Chat ID aparece na URL do chat:<br>
+                <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">youtube.com/live_chat?v=<b style="color:#FFD700;">LIVE_CHAT_ID</b></code><br>
+                3. Ou pela API: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">youtube.com/live/<b>VIDEO_ID</b></code>
+              </div>
+            </details>
+
+            <!-- Favoritos -->
+            <div class="yt-favorites-section" id="yt-favorites" style="display:none;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span style="font-size:12px;font-weight:700;color:#FFD700;text-transform:uppercase;letter-spacing:1px;">⭐ Favoritos</span>
+                <button class="btn-mini btn-mini-del" onclick="clearYTFavorites()" style="width:auto;height:auto;padding:4px 10px;font-size:11px;">Limpar</button>
+              </div>
+              <div id="yt-favorites-list" style="max-height:150px;overflow-y:auto;"></div>
+            </div>
+
+            <!-- Chat ao vivo -->
+            <div style="margin-top:16px;max-height:250px;overflow-y:auto;" id="yt-messages">
+              <p style="color:var(--text-dim);font-size:13px;text-align:center;padding:20px;">
+                Conecte ao YouTube.<br>Clique no comentário → display.
+              </p>
+            </div>
+          </section>
+        </details>
+
       </div>
     </div>
   </div>

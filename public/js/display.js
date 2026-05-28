@@ -133,6 +133,7 @@ const teamLt = document.getElementById('team-lt');
 const scoreboard = document.getElementById('firstac-scoreboard');
 const medalTable = document.getElementById('medal-table-overlay');
 const problemStatsOverlay = document.getElementById('problemstats-overlay');
+const commentOverlay = document.getElementById('comment-overlay');
 
 function resetOverlay(el) {
   if (!el) return;
@@ -717,6 +718,33 @@ function hideProblemStats() {
 }
 
 // ============================================
+// COMENTÁRIO DO CHAT
+// ============================================
+
+function showComment(author, message) {
+  resetOverlay(commentOverlay);
+  commentOverlay.classList.remove('hiding');
+
+  document.getElementById('comment-message').textContent = message || '';
+  document.getElementById('comment-author').textContent = author || 'Anônimo';
+
+  commentOverlay.classList.remove('hidden');
+  commentOverlay.classList.add('active');
+}
+
+// Esconde e avisa o painel
+function hideComment() {
+  commentOverlay.classList.remove('active');
+  commentOverlay.classList.add('hiding');
+  setTimeout(() => {
+    resetOverlay(commentOverlay);
+    commentOverlay.classList.remove('hiding');
+  }, 400);
+  // Avisa o painel que o comentário foi removido
+  socket.emit('comment-hidden');
+}
+
+// ============================================
 // TICKER CUSTOMIZAVEL (v2)
 // ============================================
 
@@ -930,6 +958,8 @@ socket.on('show-medal-table', (data) => showMedalTable(data));
 socket.on('hide-medal-table', () => hideMedalTable());
 socket.on('show-problem-stats', (data) => showProblemStats(data));
 socket.on('hide-problem-stats', () => hideProblemStats());
+socket.on('show-comment', (data) => showComment(data.author, data.message));
+socket.on('hide-comment', () => hideComment());
 socket.on('show-sports-lt', (data) => showSportsLT(data.options));
 socket.on('hide-sports-lt', () => hideSportsLT());
 socket.on('show-team-lt', (data) => showTeamLT(data.teamName, data.m1, data.m2, data.m3, data.options));
@@ -937,7 +967,7 @@ socket.on('hide-team-lt', () => hideTeamLT());
 
 socket.on('clear-all', () => {
   [medalOverlay, balloonOverlay, alertOverlay, ltLeft, ltRight, tickerBar, problemLt,
-   contestStart, contestEnd, frozenOverlay, blindOverlay, rankupOverlay, countdownOverlay, firstacOverlay, sportsLt, teamLt, scoreboard, medalTable, problemStatsOverlay].forEach(resetOverlay);
+   contestStart, contestEnd, frozenOverlay, blindOverlay, rankupOverlay, countdownOverlay, firstacOverlay, sportsLt, teamLt, scoreboard, medalTable, problemStatsOverlay, commentOverlay].forEach(resetOverlay);
   stopFrostEffect();
   stopCountdown();
   particles = [];
