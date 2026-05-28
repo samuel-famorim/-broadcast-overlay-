@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Controle - Maratona Mineira</title>
+  <link rel="stylesheet" href="/css/control.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-left">
+        <h1>🎮 <span id="header-marathon-name">Maratona Mineira de Programação</span></h1>
+        <span class="subtitle">Painel de Controle</span>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-emergency" onclick="triggerClear()" title="Limpar TUDO do display">
+          🧹 LIMPAR TUDO
+        </button>
+        <div class="status" id="connection-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Conectando...</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- ============================================ -->
+      <!-- COLUNA ESQUERDA - Ações Rápidas              -->
+      <!-- ============================================ -->
+      <div class="column">
+
+        <!-- Medalha -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">🏅 Medalhas</summary>
+          <section class="panel gold-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+          <h2>🏅 Medalhas</h2>
+          <div class="input-group">
+            <label>Nome do Time</label>
+            <input type="text" id="medal-team" placeholder="Ex: Time Binary Brains" maxlength="30">
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Tipo</label>
+              <select id="medal-type">
+                <option value="gold">🥇 Ouro</option>
+                <option value="silver">🥈 Prata</option>
+                <option value="bronze">🥉 Bronze</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Posição</label>
+              <select id="medal-position">
+                <option value="center">🎯 Centro</option>
+                <option value="right">📌 Canto Direito</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-gold" onclick="triggerMedal()">
+            <span class="btn-icon">🏅</span> Lançar Medalha
+          </button>
+          </section>
+        </details>
+
+        <!-- Balão -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">🎈 Balão</summary>
+          <section class="panel balloon-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+          <div class="input-group">
+            <label>Nome do Time</label>
+            <input type="text" id="balloon-team" placeholder="Ex: Code Masters" maxlength="20">
+          </div>
+          <div class="input-group">
+            <label>Cor do Balão</label>
+            <div class="color-grid">
+              <button class="color-btn active" style="background:#FF3366" data-color="#FF3366" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#FF6B35" data-color="#FF6B35" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#FFD700" data-color="#FFD700" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#00FF88" data-color="#00FF88" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#00BFFF" data-color="#00BFFF" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#7B68EE" data-color="#7B68EE" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#FF69B4" data-color="#FF69B4" onclick="selectColor(this)"></button>
+              <button class="color-btn" style="background:#FF4500" data-color="#FF4500" onclick="selectColor(this)"></button>
+            </div>
+          </div>
+          <button class="btn btn-balloon" onclick="triggerBalloon()">
+            <span class="btn-icon">🎈</span> Lançar Balão
+          </button>
+          </section>
+        </details>
+
+        <!-- Eventos da Prova -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">⏱️ Eventos da Prova</summary>
+          <section class="panel events-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+          <div class="event-grid">
+            <button class="btn btn-event btn-start" onclick="triggerContestStart()">⏰ Início</button>
+            <button class="btn btn-event btn-end" onclick="triggerContestEnd()">⏹ Fim</button>
+            <button class="btn btn-event btn-frozen" onclick="triggerFrozen()">🥶 Congelado</button>
+            <button class="btn btn-event btn-blind" onclick="triggerBlind()">👁️ Modo Cego</button>
+          </div>
+          <div class="rankup-section">
+            <div class="input-row">
+              <div class="input-group">
+                <label>Time</label>
+                <input type="text" id="rankup-team" placeholder="Nome do time" maxlength="25">
+              </div>
+              <div class="input-group">
+                <label>Posição</label>
+                <input type="number" id="rankup-position" placeholder="#" min="1" max="999">
+              </div>
+            </div>
+            <button class="btn btn-rankup" onclick="triggerRankUp()">🚀 Subida no Ranking</button>
+          </div>
+          </section>
+        </details>
+
+        <!-- Alertas -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">⚡ Alertas</summary>
+          <section class="panel alerts-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+          <div class="alert-grid">
+            <button class="btn btn-alert btn-accepted" onclick="triggerAlert('accepted','ACEITO!')">✅ ACEITO</button>
+            <button class="btn btn-alert btn-wrong" onclick="triggerAlert('wrong','WRONG ANSWER')">❌ WRONG ANSWER</button>
+            <button class="btn btn-alert btn-pending" onclick="triggerAlert('pending','TIME LIMIT')">⏳ TIME LIMIT</button>
+            <button class="btn btn-alert btn-pending" onclick="triggerAlert('unknown','RUNTIME ERROR')">💥 RUNTIME ERROR</button>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="input-group">
+              <label>Mensagem Customizada</label>
+              <input type="text" id="alert-message" placeholder="Digite a mensagem..." maxlength="40">
+            </div>
+            <button class="btn btn-custom" onclick="triggerCustomAlert()">📢 Disparar Alerta</button>
+          </div>
+          </section>
+        </details>
+
+        <!-- Contagem & Efeitos -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">🎉 Contagem & Efeitos</summary>
+          <section class="panel effects-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+          <div class="input-row">
+            <div class="input-group">
+              <label>Contagem a partir de</label>
+              <select id="countdown-from">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-start" onclick="triggerCountdown()" style="margin-bottom:12px;">⏱ Iniciar Contagem</button>
+
+          <div class="input-group">
+            <label>Letreiro Rotativo</label>
+            <input type="text" id="ticker-text" placeholder="Frase do letreiro..." maxlength="100">
+          </div>
+          <div class="input-row input-row-3">
+            <div class="input-group">
+              <label>Cor Texto</label>
+              <input type="color" id="ticker-color" value="#FFD700">
+            </div>
+            <div class="input-group">
+              <label>Cor Fundo</label>
+              <input type="color" id="ticker-bg" value="#000000">
+            </div>
+            <div class="input-group">
+              <label>Velocidade</label>
+              <select id="ticker-speed">
+                <option value="30">Devagar</option>
+                <option value="20" selected>Normal</option>
+                <option value="12">Rápido</option>
+              </select>
+            </div>
+          </div>
+          <div class="effects-grid">
+            <button class="btn btn-confetti" onclick="triggerTicker()">▶ Ativar</button>
+            <button class="btn btn-clear" onclick="stopTicker()">⏹ Parar</button>
+          </div>
+
+          <div class="effects-grid" style="margin-top:12px;">
+            <button class="btn btn-confetti" onclick="triggerConfetti()">🎊 Confete</button>
+          </div>
+          </section>
+        </details>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- COLUNA DIREITA - LTs com Tabs                 -->
+      <!-- ============================================ -->
+      <div class="column">
+
+        <!-- Configurações Gerais -->
+        <details class="global-collapse">
+          <summary class="global-summary">⚙️ Configurações Gerais</summary>
+          <section class="panel settings-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+            <div class="input-group">
+              <label>Nome da Maratona</label>
+              <input type="text" id="global-marathon-name" placeholder="Ex: Maratona Mineira de Programação" maxlength="50" onchange="updateMarathonName()">
+            </div>
+            <p class="panel-hint">Este nome aparece nos overlays de medalha, início de prova e no header.</p>
+          </section>
+        </details>
+
+        <!-- Cores Globais -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">🎨 Cores Globais</summary>
+          <section class="panel global-colors-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+            <p class="panel-hint">Aplica em todos os LTs. Cada aba também aceita override.</p>
+            <div class="input-row input-row-3">
+              <div class="input-group"><label>Barra Superior</label><input type="color" id="global-top-bg" value="#0066FF"></div>
+              <div class="input-group"><label>Barra Inferior</label><input type="color" id="global-bottom-bg" value="#FFD700"></div>
+              <div class="input-group"><label>Fundo Logo</label><input type="color" id="global-logo-bg" value="#1a1a1a"></div>
+            </div>
+            <div class="input-row input-row-3">
+              <div class="input-group"><label>Texto Superior</label><input type="color" id="global-name-color" value="#FFFFFF"></div>
+              <div class="input-group"><label>Texto Inferior</label><input type="color" id="global-role-color" value="#1a1a1a"></div>
+              <div class="input-group"><label>Detalhe 1</label><input type="color" id="global-geo1" value="#FF1493"></div>
+            </div>
+            <div class="input-row">
+              <div class="input-group"><label>Detalhe 2</label><input type="color" id="global-geo2" value="#FFD700"></div>
+              <div class="input-group"><label>URL Logo Global</label><input type="text" id="global-logo-url" placeholder="https://..."></div>
+            </div>
+            <button class="btn btn-global-apply" onclick="applyGlobalColors()">🎨 Aplicar em Todos</button>
+          </section>
+        </details>
+
+        <!-- Global Problemas -->
+        <details class="global-collapse" open>
+          <summary class="global-summary">📋 Problemas Globais</summary>
+          <section class="panel global-problems-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+            <p class="panel-hint">Registre os problemas aqui. As abas LT Problema e First AC usam estes dados.</p>
+            <div class="problem-registry" id="problem-registry"></div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button class="btn btn-sports" onclick="addProblemRow()" style="flex:1;">➕ Adicionar Problema</button>
+              <button class="btn btn-clear" onclick="clearAllProblems()" style="flex:1;">🧹 Limpar Todos</button>
+            </div>
+          </section>
+        </details>
+
+        <!-- Bloco 1: Barras -->
+        <div class="section-label">📺 Barras de Overlay</div>
+        <section class="panel tabs-panel">
+          <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('pessoas')">Pessoas</button>
+            <button class="tab-btn" onclick="switchTab('time')">Time</button>
+            <button class="tab-btn" onclick="switchTab('barra')">Barra</button>
+          </div>
+
+          <!-- Tab: Pessoas -->
+          <div class="tab-content active" id="tab-pessoas">
+            <div class="preset-row">
+              <select id="preset-pessoas" onchange="loadPreset('pessoas')">
+                <option value="">-- Preset --</option>
+              </select>
+              <button class="btn-mini" onclick="savePreset('pessoas')">💾</button>
+              <button class="btn-mini btn-mini-del" onclick="deletePreset('pessoas')">🗑</button>
+            </div>
+
+            <div class="lt-dual">
+              <div class="lt-half">
+                <h3>◀ Esquerdo</h3>
+                <div class="input-group">
+                  <label>Nome</label>
+                  <input type="text" id="lt-left-name" placeholder="Ex: Prof. Carlos Silva" maxlength="30">
+                </div>
+                <div class="input-group">
+                  <label>Função</label>
+                  <input type="text" id="lt-left-role" placeholder="Ex: Juiz Principal" maxlength="25">
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">Ativo</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="lt-left-toggle" onchange="toggleLowerThird('left', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="lt-half">
+                <h3>Direito ▶</h3>
+                <div class="input-group">
+                  <label>Nome</label>
+                  <input type="text" id="lt-right-name" placeholder="Ex: Dra. Ana Costa" maxlength="30">
+                </div>
+                <div class="input-group">
+                  <label>Função</label>
+                  <input type="text" id="lt-right-role" placeholder="Ex: Coordenadora" maxlength="25">
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">Ativo</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="lt-right-toggle" onchange="toggleLowerThird('right', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <details class="lt-colors-details">
+              <summary>Cores específicas (override)</summary>
+              <div class="input-row input-row-3" style="margin-top:8px;">
+                <div class="input-group"><label>Barra Superior</label><input type="color" id="lt-top-bg" value="#0066FF"></div>
+                <div class="input-group"><label>Barra Inferior</label><input type="color" id="lt-bottom-bg" value="#FFD700"></div>
+                <div class="input-group"><label>Fundo Logo</label><input type="color" id="lt-logo-bg" value="#1a1a1a"></div>
+              </div>
+              <div class="input-row input-row-3">
+                <div class="input-group"><label>Texto Nome</label><input type="color" id="lt-name-color" value="#FFFFFF"></div>
+                <div class="input-group"><label>Texto Função</label><input type="color" id="lt-role-color" value="#1a1a1a"></div>
+                <div class="input-group"><label>URL Logo</label><input type="text" id="lt-logo-url" placeholder="https://..."></div>
+              </div>
+              <div class="input-row">
+                <div class="input-group"><label>Detalhe 1</label><input type="color" id="lt-geo1" value="#FF1493"></div>
+                <div class="input-group"><label>Detalhe 2</label><input type="color" id="lt-geo2" value="#FFD700"></div>
+              </div>
+            </details>
+
+            <button class="btn btn-sports" onclick="applyBothLTs()">🔄 Aplicar / Atualizar</button>
+          </div>
+
+          <!-- Tab: Time -->
+          <div class="tab-content" id="tab-time">
+            <div class="preset-row">
+              <select id="preset-time" onchange="loadPreset('time')">
+                <option value="">-- Preset --</option>
+              </select>
+              <button class="btn-mini" onclick="savePreset('time')">💾</button>
+              <button class="btn-mini btn-mini-del" onclick="deletePreset('time')">🗑</button>
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Ativo</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="team-lt-toggle" onchange="toggleTeamLT(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="input-group">
+              <label>Nome do Time</label>
+              <input type="text" id="team-lt-name" placeholder="Ex: Binary Brains" maxlength="30">
+            </div>
+            <div class="input-row input-row-3">
+              <div class="input-group"><label>Integrante 1</label><input type="text" id="team-lt-m1" placeholder="João Silva" maxlength="25"></div>
+              <div class="input-group"><label>Integrante 2</label><input type="text" id="team-lt-m2" placeholder="Maria Costa" maxlength="25"></div>
+              <div class="input-group"><label>Integrante 3</label><input type="text" id="team-lt-m3" placeholder="Pedro Santos" maxlength="25"></div>
+            </div>
+
+            <details class="lt-colors-details">
+              <summary>Cores específicas (override)</summary>
+              <div class="input-row input-row-3" style="margin-top:8px;">
+                <div class="input-group"><label>Barra Superior</label><input type="color" id="team-lt-top-bg" value="#0066FF"></div>
+                <div class="input-group"><label>Barra Inferior</label><input type="color" id="team-lt-bottom-bg" value="#FFD700"></div>
+                <div class="input-group"><label>Fundo Logo</label><input type="color" id="team-lt-logo-bg" value="#1a1a1a"></div>
+              </div>
+              <div class="input-row input-row-3">
+                <div class="input-group"><label>Texto Time</label><input type="color" id="team-lt-name-color" value="#FFFFFF"></div>
+                <div class="input-group"><label>Texto Membros</label><input type="color" id="team-lt-members-color" value="#1a1a1a"></div>
+                <div class="input-group"><label>URL Logo</label><input type="text" id="team-lt-logo" placeholder="https://..."></div>
+              </div>
+            </details>
+
+            <button class="btn btn-sports" onclick="applyTeamLT()">🔄 Aplicar / Atualizar</button>
+          </div>
+
+          <!-- Tab: Barra Esportiva -->
+          <div class="tab-content" id="tab-barra">
+            <div class="preset-row">
+              <select id="preset-barra" onchange="loadPreset('barra')">
+                <option value="">-- Preset --</option>
+              </select>
+              <button class="btn-mini" onclick="savePreset('barra')">💾</button>
+              <button class="btn-mini btn-mini-del" onclick="deletePreset('barra')">🗑</button>
+            </div>
+
+            <div class="toggle-row">
+              <span class="toggle-label">Ativo</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="sports-lt-toggle" onchange="toggleSportsLT(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="input-group"><label>Texto Superior</label><input type="text" id="sports-title" placeholder="AO VIVO • MARATONA MINEIRA" maxlength="50"></div>
+            <div class="input-group"><label>Texto Inferior</label><input type="text" id="sports-subtitle" placeholder="ETAPA FINAL • BELO HORIZONTE" maxlength="50"></div>
+
+            <details class="lt-colors-details">
+              <summary>Cores específicas (override)</summary>
+              <div class="input-row input-row-3" style="margin-top:8px;">
+                <div class="input-group"><label>Barra Superior</label><input type="color" id="sports-top-bg" value="#0066FF"></div>
+                <div class="input-group"><label>Barra Inferior</label><input type="color" id="sports-bottom-bg" value="#FFD700"></div>
+                <div class="input-group"><label>Fundo Logo</label><input type="color" id="sports-logo-bg" value="#1a1a1a"></div>
+              </div>
+              <div class="input-row input-row-3">
+                <div class="input-group"><label>Texto Superior</label><input type="color" id="sports-top-text" value="#FFFFFF"></div>
+                <div class="input-group"><label>Texto Inferior</label><input type="color" id="sports-bottom-text" value="#1a1a1a"></div>
+                <div class="input-group"><label>URL Logo</label><input type="text" id="sports-logo-url" placeholder="https://..."></div>
+              </div>
+              <div class="input-row">
+                <div class="input-group"><label>Detalhe 1</label><input type="color" id="sports-geo1" value="#FF1493"></div>
+                <div class="input-group"><label>Detalhe 2</label><input type="color" id="sports-geo2" value="#FFD700"></div>
+              </div>
+            </details>
+
+            <button class="btn btn-sports" onclick="applySportsLT()">🔄 Aplicar / Atualizar</button>
+          </div>
+        </section>
+
+        <!-- Bloco 2: Placar & Questões -->
+        <div class="section-label">🏆 Placar & Questões</div>
+        <section class="panel tabs-panel">
+          <div class="tabs-nav">
+            <button class="tab-btn" onclick="switchTab('problema-lt')">📋 Problema</button>
+            <button class="tab-btn" onclick="switchTab('firstac')">⭐ First AC</button>
+            <button class="tab-btn" onclick="switchTab('medaltable')">🏅 Medalhas</button>
+            <button class="tab-btn" onclick="switchTab('problemstats')">📊 Estatísticas</button>
+          </div>
+
+          <!-- Tab: LT Problema -->
+          <div class="tab-content" id="tab-problema-lt">
+            <div class="toggle-row">
+              <span class="toggle-label">Ativo</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="problem-lt-toggle" onchange="toggleProblemLT(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="input-group">
+              <label>Problema</label>
+              <select id="prob-problem-select">
+                <option value="">-- Selecione --</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Nº de ACs</label>
+              <input type="number" id="prob-acs-input" placeholder="Ex: 12" min="0" max="999">
+            </div>
+            <button class="btn btn-problem" onclick="applyProblemLT()">🔄 Aplicar / Atualizar</button>
+          </div>
+
+          <!-- Tab: Placar de Medalhas -->
+          <div class="tab-content" id="tab-medaltable">
+            <div class="toggle-row">
+              <span class="toggle-label">Exibir no Display</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="medaltable-toggle" onchange="toggleMedalTable(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="preset-row">
+              <select id="preset-medaltable" onchange="loadPreset('medaltable')">
+                <option value="">-- Preset --</option>
+              </select>
+              <button class="btn-mini" onclick="savePreset('medaltable')">💾</button>
+              <button class="btn-mini btn-mini-del" onclick="deletePreset('medaltable')">🗑</button>
+            </div>
+
+            <div class="medaltable-editor" id="medaltable-editor"></div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button class="btn btn-sports" onclick="addMedalRow()" style="flex:1;">➕ Adicionar Universidade</button>
+              <button class="btn btn-clear" onclick="clearMedalTable()" style="flex:1;">🧹 Limpar</button>
+            </div>
+            <button class="btn btn-rankup" onclick="applyMedalTable()" style="margin-top:8px;">🔄 Atualizar Placar</button>
+          </div>
+
+          <!-- Tab: First AC -->
+          <div class="tab-content" id="tab-firstac">
+            <div class="input-group">
+              <label>Problema</label>
+              <select id="firstac-problem-select">
+                <option value="">-- Selecione --</option>
+              </select>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Nome do Time</label>
+                <input type="text" id="firstac-team" placeholder="Binary Brains" maxlength="25">
+              </div>
+              <div class="input-group">
+                <label>Universidade</label>
+                <input type="text" id="firstac-university" placeholder="Ex: UFMG" maxlength="30">
+              </div>
+            </div>
+            <button class="btn btn-firstac" onclick="triggerFirstAC()">⭐ FIRST AC!</button>
+
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-scoreboard" onclick="toggleScoreboard()" style="flex:1;">🏆 Placar</button>
+              <button class="btn btn-mini" onclick="addManualFirstACEntry()" title="Adicionar entrada manual" style="width:auto;height:auto;padding:12px 16px;font-size:13px;font-weight:700;">➕ Manual</button>
+              <button class="btn btn-mini btn-mini-del" onclick="deleteLastFirstAC()" title="Remover última entrada" style="width:auto;height:auto;padding:12px 16px;font-size:13px;font-weight:700;">✕ Última</button>
+            </div>
+
+            <details style="margin-top:12px;">
+              <summary style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);cursor:pointer;">📋 Gerenciar Placar</summary>
+              <div style="margin-top:8px;max-height:200px;overflow-y:auto;" id="scoreboard-manager"></div>
+              <button class="btn btn-clear" onclick="clearFirstACEntries();toggleScoreboard();" style="margin-top:8px;">🧹 Limpar Placar</button>
+            </details>
+          </div>
+
+          <!-- Tab: Estatísticas de Problemas -->
+          <div class="tab-content" id="tab-problemstats">
+            <div class="toggle-row">
+              <span class="toggle-label">Exibir no Display</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="problemstats-toggle" onchange="toggleProblemStats(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="preset-row">
+              <select id="preset-problemstats" onchange="loadPreset('problemstats')">
+                <option value="">-- Preset --</option>
+              </select>
+              <button class="btn-mini" onclick="savePreset('problemstats')">💾</button>
+              <button class="btn-mini btn-mini-del" onclick="deletePreset('problemstats')">🗑</button>
+            </div>
+
+            <div class="problemstats-editor" id="problemstats-editor"></div>
+
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button class="btn btn-sports" onclick="applyProblemStats()" style="flex:1;">🔄 Atualizar Tabela</button>
+              <button class="btn btn-clear" onclick="resetProblemStats()" style="flex:1;">🧹 Resetar</button>
+            </div>
+          </div>
+
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/control.js"></script>
+</body>
+</html>

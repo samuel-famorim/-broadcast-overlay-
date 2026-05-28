@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay - Maratona Mineira</title>
+  <link rel="stylesheet" href="/css/display.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <div id="overlay-container">
+
+    <!-- Medalha -->
+    <div id="medal-overlay" class="overlay hidden">
+      <div class="medal-glow"></div>
+      <div class="medal-circle">
+        <span class="medal-emoji">🥇</span>
+      </div>
+      <div class="medal-team-name"></div>
+      <div class="medal-subtitle">Maratona Mineira de Programação</div>
+    </div>
+
+    <!-- Balão -->
+    <div id="balloon-overlay" class="overlay hidden">
+      <div class="balloon-body">
+        <div class="balloon-shine"></div>
+        <div class="balloon-team-name"></div>
+      </div>
+      <div class="balloon-string"></div>
+    </div>
+
+    <!-- Card de Alerta -->
+    <div id="alert-overlay" class="overlay hidden">
+      <div class="alert-card">
+        <div class="alert-icon"></div>
+        <div class="alert-message"></div>
+      </div>
+    </div>
+
+    <!-- Lower Third Esquerdo (estilo esportivo) -->
+    <div id="lowerthird-left" class="overlay hidden">
+      <div class="sports-lt-left">
+        <!-- Bloco Logo -->
+        <div class="lt-sports-logo-block">
+          <div class="lt-sports-geo-top"></div>
+          <div class="lt-sports-geo-bottom"></div>
+          <div class="lt-sports-logo-circle">
+            <img class="lt-sports-logo-img" src="" alt="Logo" onerror="this.style.display='none'">
+          </div>
+        </div>
+        <!-- Texto -->
+        <div class="lt-sports-text-block">
+          <div class="lt-sports-bar-top">
+            <span class="lt-sports-name"></span>
+          </div>
+          <div class="lt-sports-bar-bottom">
+            <span class="lt-sports-role"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lower Third Direito (estilo esportivo) -->
+    <div id="lowerthird-right" class="overlay hidden">
+      <div class="sports-lt-right">
+        <!-- Texto -->
+        <div class="lt-sports-text-block">
+          <div class="lt-sports-bar-top" style="border-radius: 8px 0 0 0;">
+            <span class="lt-sports-name"></span>
+          </div>
+          <div class="lt-sports-bar-bottom" style="border-radius: 0 0 0 8px;">
+            <span class="lt-sports-role"></span>
+          </div>
+        </div>
+        <!-- Bloco Logo -->
+        <div class="lt-sports-logo-block" style="border-radius: 0 8px 8px 0;">
+          <div class="lt-sports-geo-top" style="left: auto; right: -6px;"></div>
+          <div class="lt-sports-geo-bottom" style="left: auto; right: -6px;"></div>
+          <div class="lt-sports-logo-circle">
+            <img class="lt-sports-logo-img" src="" alt="Logo" onerror="this.style.display='none'">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LT de Problema -->
+    <div id="problem-lt" class="overlay hidden">
+      <div class="sports-lt-left">
+        <div class="lt-sports-logo-block prob-acs-block">
+          <div class="lt-sports-geo-top"></div>
+          <div class="lt-sports-geo-bottom"></div>
+          <div class="prob-acs-big">
+            <span class="prob-acs-num" id="prob-acs">0</span>
+            <span class="prob-acs-label">ACERTOS</span>
+          </div>
+        </div>
+        <div class="lt-sports-text-block">
+          <div class="lt-sports-bar-top">
+            <span class="lt-sports-name" id="prob-letter"></span>
+          </div>
+          <div class="lt-sports-bar-bottom">
+            <span class="lt-sports-role" id="prob-name"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticker / Letreiro (estilo esportivo) -->
+    <div id="ticker-bar" class="overlay hidden">
+      <div class="ticker-accent"></div>
+      <div class="ticker-track">
+        <span class="ticker-text"></span>
+      </div>
+    </div>
+
+    <!-- Início da Prova -->
+    <div id="contest-start" class="overlay hidden">
+      <div class="event-clock">
+        <div class="clock-face">
+          <div class="clock-hand"></div>
+          <div class="clock-center"></div>
+          <span class="clock-icon">⏰</span>
+        </div>
+      </div>
+      <div class="event-title">INÍCIO DA PROVA</div>
+      <div class="event-subtitle">Maratona Mineira de Programação</div>
+    </div>
+
+    <!-- Fim da Prova -->
+    <div id="contest-end" class="overlay hidden">
+      <div class="event-stop-sign">
+        <span>⏹</span>
+      </div>
+      <div class="event-title">FIM DA PROVA</div>
+      <div class="event-subtitle">Tempo Encerrado!</div>
+    </div>
+
+    <!-- Placar Congelado -->
+    <div id="frozen-overlay" class="overlay hidden">
+      <canvas class="frost-canvas" id="frost-canvas"></canvas>
+      <div class="frost-content">
+        <div class="frost-icon">🥶</div>
+        <div class="event-title frost-title">PLACAR CONGELADO</div>
+        <div class="event-subtitle">Resultado final em breve...</div>
+      </div>
+    </div>
+
+    <!-- Blind Mode -->
+    <div id="blind-overlay" class="overlay hidden">
+      <div class="blind-eye">👁️‍🗨️</div>
+      <div class="event-title blind-title">MODO CEGO</div>
+      <div class="event-subtitle">Times não sabem o resultado!</div>
+      <div class="blind-dots">
+        <span>?</span><span>?</span><span>?</span>
+      </div>
+    </div>
+
+    <!-- Subida no Ranking -->
+    <div id="rankup-overlay" class="overlay hidden">
+      <div class="rankup-rocket">🚀</div>
+      <div class="rankup-content">
+        <div class="rankup-team-name"></div>
+        <div class="rankup-position"></div>
+        <div class="rankup-label">SUBINDO NO RANKING</div>
+      </div>
+    </div>
+
+    <!-- Contagem Regressiva -->
+    <div id="countdown-overlay" class="overlay hidden">
+      <div class="countdown-ring">
+        <svg class="countdown-svg" viewBox="0 0 200 200">
+          <circle class="countdown-track" cx="100" cy="100" r="90"/>
+          <circle class="countdown-progress" cx="100" cy="100" r="90"/>
+        </svg>
+        <div class="countdown-number">5</div>
+      </div>
+      <div class="event-title countdown-title">PREPARE-SE</div>
+    </div>
+
+    <!-- LT de Competidores (centro) -->
+    <div id="team-lt" class="overlay hidden">
+      <div class="team-lt-inner">
+        <div class="team-lt-logo-block">
+          <div class="lt-sports-geo-top"></div>
+          <div class="lt-sports-geo-bottom"></div>
+          <div class="lt-sports-logo-circle">
+            <img class="lt-sports-logo-img" src="" alt="Logo" onerror="this.style.display='none'">
+          </div>
+        </div>
+        <div class="team-lt-text-block">
+          <div class="team-lt-bar-top">
+            <span class="team-lt-name"></span>
+          </div>
+          <div class="team-lt-bar-bottom">
+            <span class="team-lt-members"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra Esportiva (Sports LT) -->
+    <div id="sports-lt" class="overlay hidden">
+      <!-- Bloco da Esquerda (Logo) -->
+      <div class="sports-logo-block">
+        <div class="sports-geo-top"></div>
+        <div class="sports-geo-bottom"></div>
+        <div class="sports-logo-circle">
+          <img class="sports-logo-img" src="" alt="Logo" onerror="this.style.display='none'">
+        </div>
+      </div>
+      <!-- Barras de Texto -->
+      <div class="sports-text-block">
+        <div class="sports-bar-top">
+          <span class="sports-title-text"></span>
+        </div>
+        <div class="sports-bar-bottom">
+          <span class="sports-subtitle-text"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- First AC -->
+    <div id="firstac-overlay" class="overlay hidden">
+      <div class="firstac-burst">
+        <div class="firstac-star">⭐</div>
+        <div class="firstac-trophy">🏆</div>
+      </div>
+      <div class="firstac-content">
+        <div class="firstac-label">FIRST AC!</div>
+        <div class="firstac-problem"></div>
+        <div class="firstac-team"></div>
+        <div class="firstac-balloon"></div>
+      </div>
+    </div>
+
+    <!-- Placar de Medalhas -->
+    <div id="medal-table-overlay" class="overlay hidden">
+      <div class="medaltable-bg"></div>
+      <div class="medaltable-content">
+        <div class="medaltable-header">
+          <div class="scoreboard-accent"></div>
+          <h2>🏅 QUADRO DE MEDALHAS</h2>
+        </div>
+        <div class="medaltable-table">
+          <div class="medaltable-thead">
+            <span>Universidade</span>
+            <span>🥇</span>
+            <span>🥈</span>
+            <span>🥉</span>
+            <span>Total</span>
+          </div>
+          <div class="medaltable-body" id="medaltable-rows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Estatísticas (ACs por problema) -->
+    <div id="problemstats-overlay" class="overlay hidden">
+      <div class="medaltable-bg"></div>
+      <div class="medaltable-content">
+        <div class="medaltable-header">
+          <div class="scoreboard-accent"></div>
+          <h2>📊 ESTATÍSTICAS POR PROBLEMA</h2>
+        </div>
+        <div class="medaltable-table">
+          <div class="medaltable-thead" style="grid-template-columns: 100px 1fr 100px 140px;">
+            <span>Problema</span>
+            <span>Nome</span>
+            <span>ACs</span>
+            <span>Status</span>
+          </div>
+          <div class="medaltable-body" id="problemstats-rows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placar First AC -->
+    <div id="firstac-scoreboard" class="overlay hidden">
+      <div class="scoreboard-bg"></div>
+      <div class="scoreboard-content">
+        <div class="scoreboard-header">
+          <div class="scoreboard-accent"></div>
+          <h2>🏆 FIRST AC LEADERBOARD</h2>
+        </div>
+        <div class="scoreboard-table">
+          <div class="scoreboard-thead">
+            <span>Time / Universidade</span>
+            <span>Problema</span>
+            <span>Horário</span>
+          </div>
+          <div class="scoreboard-body" id="scoreboard-rows"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/display.js"></script>
+</body>
+</html>

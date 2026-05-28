@@ -1,0 +1,14 @@
+{
+  "name": "broadcast-overlay",
+  "version": "1.0.0",
+  "description": "Sistema de overlay para transmissão - Maratona Mineira de Programação",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "socket.io": "^4.7.5"
+  }
+}
