@@ -209,6 +209,13 @@
         <details class="global-collapse" open>
           <summary class="global-summary">🎨 Cores Globais</summary>
           <section class="panel global-colors-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
+            <div class="preset-row" style="margin-bottom:12px;">
+              <select id="preset-globalcolors" onchange="loadPreset('globalcolors')">
+                <option value="">-- Preset de Cores --</option>
+              </select>
+              <button class="btn-mini" onclick="savePreset('globalcolors')">💾</button>
+              <button class="btn-mini btn-mini-del" onclick="deletePreset('globalcolors')">🗑</button>
+            </div>
             <p class="panel-hint">Aplica em todos os LTs. Cada aba também aceita override.</p>
             <div class="input-row input-row-3">
               <div class="input-group"><label>Barra Superior</label><input type="color" id="global-top-bg" value="#0066FF"></div>

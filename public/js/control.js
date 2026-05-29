@@ -139,7 +139,7 @@ function loadPresetDropdown(type) {
 }
 
 function loadAllPresets() {
-  ['pessoas', 'time', 'barra', 'medaltable', 'problemstats'].forEach(loadPresetDropdown);
+  ['pessoas', 'time', 'barra', 'medaltable', 'problemstats', 'globalcolors'].forEach(loadPresetDropdown);
   initProblems();
   renderScoreboardManager();
   renderMedalEditor();
@@ -213,6 +213,17 @@ function savePreset(type) {
       membersColor: document.getElementById('team-lt-members-color').value,
       logoUrl: document.getElementById('team-lt-logo').value.trim()
     };
+  } else if (type === 'globalcolors') {
+    data.colors = {
+      topBg: document.getElementById('global-top-bg').value,
+      bottomBg: document.getElementById('global-bottom-bg').value,
+      logoBg: document.getElementById('global-logo-bg').value,
+      nameColor: document.getElementById('global-name-color').value,
+      roleColor: document.getElementById('global-role-color').value,
+      geo1: document.getElementById('global-geo1').value,
+      geo2: document.getElementById('global-geo2').value,
+      logoUrl: document.getElementById('global-logo-url').value.trim()
+    };
   } else if (type === 'problemstats') {
     data.rows = getProblemStats();
   } else if (type === 'medaltable') {
@@ -260,6 +271,18 @@ function loadPreset(type) {
     setVal('team-lt-m1', p.m1 || ''); setVal('team-lt-m2', p.m2 || ''); setVal('team-lt-m3', p.m3 || '');
     if (p.colors) loadColors(p.colors, { top:'team-lt-top-bg', bottom:'team-lt-bottom-bg', logo:'team-lt-logo-bg',
       name:'team-lt-name-color', role:'team-lt-members-color', logoUrl:'team-lt-logo' });
+  } else if (type === 'globalcolors') {
+    if (p.colors) {
+      const c = p.colors;
+      if (c.topBg) setVal('global-top-bg', c.topBg);
+      if (c.bottomBg) setVal('global-bottom-bg', c.bottomBg);
+      if (c.logoBg) setVal('global-logo-bg', c.logoBg);
+      if (c.nameColor) setVal('global-name-color', c.nameColor);
+      if (c.roleColor) setVal('global-role-color', c.roleColor);
+      if (c.geo1) setVal('global-geo1', c.geo1);
+      if (c.geo2) setVal('global-geo2', c.geo2);
+      if (c.logoUrl !== undefined) setVal('global-logo-url', c.logoUrl);
+    }
   } else if (type === 'problemstats') {
     if (p.rows) { localStorage.setItem(PROBLEMSTATS_KEY, JSON.stringify(p.rows)); renderProblemStatsEditor(); }
   } else if (type === 'medaltable') {
