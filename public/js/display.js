@@ -127,6 +127,7 @@ const blindOverlay = document.getElementById('blind-overlay');
 const rankupOverlay = document.getElementById('rankup-overlay');
 const countdownOverlay = document.getElementById('countdown-overlay');
 const problemLt = document.getElementById('problem-lt');
+const sponsorsLt = document.getElementById('sponsors-lt');
 const firstacOverlay = document.getElementById('firstac-overlay');
 const sportsLt = document.getElementById('sports-lt');
 const teamLt = document.getElementById('team-lt');
@@ -891,6 +892,39 @@ function hideTeamLT() {
   }, 350);
 }
 
+function showSponsorsLT(options) {
+  options = options || {};
+  resetOverlay(sponsorsLt);
+
+  const leftBg = options.leftBg || 'linear-gradient(135deg, #FF1493, #FF6B6B, #FFD700)';
+  const rightBg = options.rightBg || 'linear-gradient(225deg, #00BFFF, #4ECDC4, #00FF88)';
+  const leftGeo1 = options.leftGeo1 || '#FF1493';
+  const leftGeo2 = options.leftGeo2 || '#FFD700';
+  const rightGeo1 = options.rightGeo1 || '#00BFFF';
+  const rightGeo2 = options.rightGeo2 || '#00FF88';
+  const contentBg = options.contentBg || '#FFFFFF';
+
+  sponsorsLt.querySelector('.sponsors-accent-left').style.background = leftBg;
+  sponsorsLt.querySelector('.sponsors-accent-right').style.background = rightBg;
+  sponsorsLt.querySelector('.sponsors-geo-left-top').style.background = leftGeo1;
+  sponsorsLt.querySelector('.sponsors-geo-left-bottom').style.background = leftGeo2;
+  sponsorsLt.querySelector('.sponsors-geo-right-top').style.background = rightGeo1;
+  sponsorsLt.querySelector('.sponsors-geo-right-bottom').style.background = rightGeo2;
+  sponsorsLt.querySelector('.sponsors-content').style.background = contentBg;
+
+  sponsorsLt.classList.remove('hidden', 'hiding');
+  sponsorsLt.classList.add('active');
+}
+
+function hideSponsorsLT() {
+  sponsorsLt.classList.remove('active');
+  sponsorsLt.classList.add('hiding');
+  setTimeout(() => {
+    resetOverlay(sponsorsLt);
+    sponsorsLt.classList.remove('hiding');
+  }, 500);
+}
+
 // ============================================
 // SOCKET EVENTS
 // ============================================
@@ -964,10 +998,12 @@ socket.on('show-sports-lt', (data) => showSportsLT(data.options));
 socket.on('hide-sports-lt', () => hideSportsLT());
 socket.on('show-team-lt', (data) => showTeamLT(data.teamName, data.m1, data.m2, data.m3, data.options));
 socket.on('hide-team-lt', () => hideTeamLT());
+socket.on('show-sponsors-lt', (data) => showSponsorsLT(data));
+socket.on('hide-sponsors-lt', () => hideSponsorsLT());
 
 socket.on('clear-all', () => {
   [medalOverlay, balloonOverlay, alertOverlay, ltLeft, ltRight, tickerBar, problemLt,
-   contestStart, contestEnd, frozenOverlay, blindOverlay, rankupOverlay, countdownOverlay, firstacOverlay, sportsLt, teamLt, scoreboard, medalTable, problemStatsOverlay, commentOverlay].forEach(resetOverlay);
+   contestStart, contestEnd, frozenOverlay, blindOverlay, rankupOverlay, countdownOverlay, firstacOverlay, sportsLt, teamLt, sponsorsLt, scoreboard, medalTable, problemStatsOverlay, commentOverlay].forEach(resetOverlay);
   stopFrostEffect();
   stopCountdown();
   particles = [];

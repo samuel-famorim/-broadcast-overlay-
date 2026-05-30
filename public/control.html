@@ -255,6 +255,7 @@
             <button class="tab-btn active" onclick="switchTab('pessoas')">Pessoas</button>
             <button class="tab-btn" onclick="switchTab('time')">Time</button>
             <button class="tab-btn" onclick="switchTab('barra')">Barra</button>
+            <button class="tab-btn" onclick="switchTab('sponsors')">🤝 Sponsors</button>
           </div>
 
           <!-- Tab: Pessoas -->
@@ -390,8 +391,8 @@
               </label>
             </div>
 
-            <div class="input-group"><label>Texto Superior</label><input type="text" id="sports-title" placeholder="AO VIVO • MARATONA MINEIRA" maxlength="50"></div>
-            <div class="input-group"><label>Texto Inferior</label><input type="text" id="sports-subtitle" placeholder="ETAPA FINAL • BELO HORIZONTE" maxlength="50"></div>
+            <div class="input-group"><label>Texto Superior</label><input type="text" id="sports-title" placeholder="AO VIVO • MARATONA MINEIRA" maxlength="120"></div>
+            <div class="input-group"><label>Texto Inferior</label><input type="text" id="sports-subtitle" placeholder="ETAPA FINAL • BELO HORIZONTE" maxlength="120"></div>
 
             <details class="lt-colors-details">
               <summary>Cores específicas (override)</summary>
@@ -412,6 +413,38 @@
             </details>
 
             <button class="btn btn-sports" onclick="applySportsLT()">🔄 Aplicar / Atualizar</button>
+          </div>
+
+          <!-- Tab: Sponsors -->
+          <div class="tab-content" id="tab-sponsors">
+            <div class="toggle-row">
+              <span class="toggle-label">Exibir no Display</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="sponsors-lt-toggle" onchange="toggleSponsorsLT(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <details class="lt-colors-details" open>
+              <summary>Cores</summary>
+              <div class="input-row input-row-2" style="margin-top:8px;">
+                <div class="input-group"><label>Cor Lateral Esquerda</label><input type="color" id="sponsors-left-bg" value="#FF1493"></div>
+                <div class="input-group"><label>Cor Lateral Direita</label><input type="color" id="sponsors-right-bg" value="#00BFFF"></div>
+              </div>
+              <div class="input-row input-row-2">
+                <div class="input-group"><label>Detalhe Esq 1</label><input type="color" id="sponsors-geo-l1" value="#FF1493"></div>
+                <div class="input-group"><label>Detalhe Esq 2</label><input type="color" id="sponsors-geo-l2" value="#FFD700"></div>
+              </div>
+              <div class="input-row input-row-2">
+                <div class="input-group"><label>Detalhe Dir 1</label><input type="color" id="sponsors-geo-r1" value="#00BFFF"></div>
+                <div class="input-group"><label>Detalhe Dir 2</label><input type="color" id="sponsors-geo-r2" value="#00FF88"></div>
+              </div>
+              <div class="input-row">
+                <div class="input-group"><label>Fundo Conteúdo</label><input type="color" id="sponsors-content-bg" value="#FFFFFF"></div>
+              </div>
+            </details>
+
+            <button class="btn btn-sports" onclick="triggerSponsorsLT()">🤝 Exibir Sponsors</button>
           </div>
         </section>
 

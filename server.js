@@ -8,6 +8,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/src', express.static(path.join(__dirname, 'src')));
 
 app.get('/control', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'control.html'));
@@ -149,6 +150,16 @@ io.on('connection', (socket) => {
   socket.on('trigger-team-lt-hide', () => {
     console.log('[team-lt] hide');
     io.emit('hide-team-lt');
+  });
+
+  socket.on('trigger-sponsors-lt', (data) => {
+    console.log('[sponsors-lt] show');
+    io.emit('show-sponsors-lt', data || {});
+  });
+
+  socket.on('trigger-sponsors-lt-hide', () => {
+    console.log('[sponsors-lt] hide');
+    io.emit('hide-sponsors-lt');
   });
 
   socket.on('trigger-ticker-stop', () => {
