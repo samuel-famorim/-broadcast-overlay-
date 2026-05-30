@@ -2,15 +2,26 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const basicAuth = require('express-basic-auth');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Credenciais - altere aqui ou via variáveis de ambiente
+const AUTH_USER = process.env.CONTROL_USER || 'admin';
+const AUTH_PASS = process.env.CONTROL_PASS || 'maratona';
+
+const authMiddleware = basicAuth({
+  users: { [AUTH_USER]: AUTH_PASS },
+  challenge: true,
+  realm: 'Painel de Controle - Maratona Mineira'
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
-app.get('/control', (req, res) => {
+app.get('/control', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'control.html'));
 });
 
