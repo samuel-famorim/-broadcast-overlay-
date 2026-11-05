@@ -1,28 +1,34 @@
 /* ============================================
-   PAINEL DE CONTROLE - Maratona Mineira v2.0
+   PAINEL DE CONTROLE - Maratona SBC v2.0
    ============================================ */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #0a0a14;
-  --bg-card: #12122a;
-  --border: #1e1e3a;
-  --text: #e0e0f0;
-  --text-dim: #8888aa;
+  --font-anta: 'Anta', sans-serif;
+  --maratona-gradient: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-blue) 33%, var(--neon-purple) 66%, var(--neon-orange) 100%);
+  --bg: #0b0e27;
+  --bg-card: #10152b;
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --text-dim: #94a3b8;
   --gold: #FFD700;
-  --accent: #6C5CE7;
-  --danger: #FF3366;
-  --success: #00FF88;
-  --warning: #FFA500;
+  --accent: #00e5ff;
+  --danger: #ff6a00;
+  --success: #00e5ff;
+  --warning: #ff6a00;
+  
+  --neon-cyan: #00e5ff;
+  --neon-blue: #2962ff;
+  --neon-orange: #ff6a00;
+  --neon-purple: #9d00ff;
 }
 
 body {
   font-family: 'Montserrat', sans-serif;
   background: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(108,92,231,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(255,51,102,0.05) 0%, transparent 50%);
+  background-image: radial-gradient(circle at 50% 0%, #152069 0%, #0c0b4d 50%, #032833 100%);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   padding: 24px;
@@ -48,10 +54,11 @@ header {
 .header-left h1 {
   font-size: 28px;
   font-weight: 800;
-  background: linear-gradient(135deg, #FFD700, #FF6B6B, #6C5CE7);
+  background: var(--maratona-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-family: var(--font-anta);
 }
 
 .subtitle {
@@ -75,13 +82,13 @@ header {
 .status-dot {
   width: 10px; height: 10px;
   border-radius: 50%;
-  background: #FF3366;
-  box-shadow: 0 0 8px #FF3366;
+  background: var(--warning);
+  box-shadow: 0 0 8px var(--warning);
 }
 
 .status.connected .status-dot {
-  background: #00FF88;
-  box-shadow: 0 0 12px #00FF88;
+  background: var(--success);
+  box-shadow: 0 0 12px var(--success);
 }
 
 .status-text { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
@@ -89,8 +96,8 @@ header {
 /* Emergency Button */
 .btn-emergency {
   background: rgba(255,51,102,0.12);
-  border: 2px solid #FF3366;
-  color: #FF3366;
+  border: 2px solid var(--warning);
+  color: var(--warning);
   font-weight: 800;
   font-size: 13px;
   padding: 10px 18px;
@@ -100,7 +107,7 @@ header {
   white-space: nowrap;
   letter-spacing: 1px;
 }
-.btn-emergency:hover { background: #FF3366; color: #fff; box-shadow: 0 0 20px rgba(255,51,102,0.4); }
+.btn-emergency:hover { background: var(--warning); color: #fff; box-shadow: 0 0 20px rgba(255,51,102,0.4); }
 
 /* ============================================
    GRID
@@ -122,7 +129,8 @@ header {
   padding: 28px;
 }
 
-.panel h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.panel h2 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;   font-family: var(--font-anta);
+}
 
 .gold-panel { border-color: rgba(255,215,0,0.2); box-shadow: 0 0 40px rgba(255,215,0,0.03); }
 .balloon-panel { border-color: rgba(108,92,231,0.2); }
@@ -170,7 +178,8 @@ header {
 .input-group select {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-image: radial-gradient(circle at 50% 0%, #152069 0%, #0c0b4d 50%, #032833 100%);
+  background-attachment: fixed;
   background-repeat: no-repeat;
   background-position: right 16px center;
 }
@@ -283,13 +292,13 @@ header {
 
 .toggle-switch input:checked + .toggle-slider {
   background: rgba(0,255,136,0.2);
-  border-color: #00FF88;
+  border-color: var(--success);
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
   transform: translateX(24px);
-  background: #00FF88;
-  box-shadow: 0 0 8px #00FF88;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
 }
 
 /* Indicador AO VIVO */
@@ -297,8 +306,8 @@ header {
   display: none;
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: #00FF88;
-  box-shadow: 0 0 8px #00FF88;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
   margin-left: 6px;
   animation: livePulse 1s ease-in-out infinite;
 }
@@ -325,7 +334,7 @@ header {
 }
 .yt-msg.active {
   background: rgba(255,51,102,0.12);
-  border-color: #FF3366;
+  border-color: var(--warning);
   box-shadow: 0 0 12px rgba(255,51,102,0.2);
 }
 .fav-msg.active {
@@ -341,7 +350,7 @@ header {
 }
 .yt-msg-header strong {
   font-size: 13px;
-  color: #FF3366;
+  color: var(--warning);
   font-weight: 700;
 }
 .yt-msg-header small {
@@ -406,7 +415,8 @@ header {
   font-weight: 700;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23FFD700' d='M7 10L2 4h10z'/%3E%3C/svg%3E");
+  background-image: radial-gradient(circle at 50% 0%, #152069 0%, #0c0b4d 50%, #032833 100%);
+  background-attachment: fixed;
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 40px;
@@ -425,7 +435,7 @@ header {
 }
 
 .preset-row select option {
-  background: #12122a;
+  background: var(--bg-card);
   color: #e0e0f0;
   font-weight: 600;
 }
@@ -448,7 +458,7 @@ header {
 }
 
 .btn-mini:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: scale(1.05); }
-.btn-mini-del:hover { background: rgba(255,51,102,0.2); border-color: #FF3366; transform: scale(1.05); }
+.btn-mini-del:hover { background: rgba(255,51,102,0.2); border-color: var(--warning); transform: scale(1.05); }
 
 /* ============================================
    BUTTONS
@@ -613,7 +623,7 @@ header {
 .btn-hide-lt-full {
   background: rgba(255,51,102,0.08);
   border: 1px solid rgba(255,51,102,0.3);
-  color: #FF3366;
+  color: var(--warning);
   font-weight: 600;
   font-size: 14px;
   padding: 12px;
@@ -625,7 +635,7 @@ header {
 .effects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .btn-confetti {
-  background: linear-gradient(135deg, #FF6B6B, #FF3366);
+  background: linear-gradient(135deg, #FF6B6B, var(--warning));
   color: #fff;
   font-weight: 800;
   box-shadow: 0 8px 24px rgba(255,51,102,0.3);
@@ -674,22 +684,22 @@ header {
 .countdown-panel { border-color: rgba(255,51,102,0.15); }
 
 /* Sports Panel */
-.sports-panel { border-color: rgba(0,102,255,0.2); }
+.sports-panel { border-color: rgba(41,98,255,0.2); }
 .btn-sports {
-  background: linear-gradient(135deg, #0066FF, #0044CC);
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
   color: #fff;
   font-weight: 800;
-  box-shadow: 0 8px 24px rgba(0,102,255,0.25);
+  box-shadow: 0 8px 24px rgba(41,98,255,0.25);
 }
-.btn-sports:hover { box-shadow: 0 12px 32px rgba(0,102,255,0.4); }
+.btn-sports:hover { box-shadow: 0 12px 32px rgba(41,98,255,0.4); }
 
 /* Team LT Panel */
-.teamlt-panel { border-color: rgba(0,102,255,0.2); }
+.teamlt-panel { border-color: rgba(41,98,255,0.2); }
 
 /* Global Colors Panel */
 .global-colors-panel {
   border-color: rgba(255,215,0,0.3);
-  background: linear-gradient(135deg, rgba(255,215,0,0.03), rgba(0,102,255,0.03));
+  background: linear-gradient(135deg, rgba(255,215,0,0.03), rgba(41,98,255,0.03));
 }
 .panel-hint {
   font-size: 12px;

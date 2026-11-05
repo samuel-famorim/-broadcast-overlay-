@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Controle - Maratona Mineira</title>
+  <title>Painel de Controle - Maratona SBC</title>
   <link rel="stylesheet" href="/css/control.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anta&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
     <!-- Header -->
     <header>
       <div class="header-left">
-        <h1>🎮 <span id="header-marathon-name">Maratona Mineira de Programação</span></h1>
+        <h1>🎮 <span id="header-marathon-name">Maratona SBC de Programação</span></h1>
         <span class="subtitle">Painel de Controle</span>
       </div>
       <div class="header-right">
@@ -199,7 +200,7 @@
           <section class="panel settings-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
             <div class="input-group">
               <label>Nome da Maratona</label>
-              <input type="text" id="global-marathon-name" placeholder="Ex: Maratona Mineira de Programação" maxlength="50" onchange="updateMarathonName()">
+              <input type="text" id="global-marathon-name" placeholder="Ex: Maratona SBC de Programação" maxlength="50" onchange="updateMarathonName()">
             </div>
             <p class="panel-hint">Este nome aparece nos overlays de medalha, início de prova e no header.</p>
           </section>
@@ -220,16 +221,16 @@
             <div class="input-row input-row-3">
               <div class="input-group"><label>Barra Superior</label><input type="color" id="global-top-bg" value="#0066FF"></div>
               <div class="input-group"><label>Barra Inferior</label><input type="color" id="global-bottom-bg" value="#FFD700"></div>
-              <div class="input-group"><label>Fundo Logo</label><input type="color" id="global-logo-bg" value="#1a1a1a"></div>
+              <div class="input-group"><label>Fundo Logo</label><input type="color" id="global-logo-bg" value="#10152b"></div>
             </div>
             <div class="input-row input-row-3">
               <div class="input-group"><label>Texto Superior</label><input type="color" id="global-name-color" value="#FFFFFF"></div>
-              <div class="input-group"><label>Texto Inferior</label><input type="color" id="global-role-color" value="#1a1a1a"></div>
+              <div class="input-group"><label>Texto Inferior</label><input type="color" id="global-role-color" value="#10152b"></div>
               <div class="input-group"><label>Detalhe 1</label><input type="color" id="global-geo1" value="#FF1493"></div>
             </div>
             <div class="input-row">
               <div class="input-group"><label>Detalhe 2</label><input type="color" id="global-geo2" value="#FFD700"></div>
-              <div class="input-group"><label>URL Logo Global</label><input type="text" id="global-logo-url" placeholder="https://..."></div>
+              <div class="input-group"><label>URL Logo Global</label><input type="text" id="global-logo-url" value="/src/sbc_assets/sabia-voando.png" placeholder="/src/sbc_assets/sabia-voando.png"></div>
             </div>
             <button class="btn btn-global-apply" onclick="applyGlobalColors()">🎨 Aplicar em Todos</button>
           </section>
@@ -312,12 +313,12 @@
               <div class="input-row input-row-3" style="margin-top:8px;">
                 <div class="input-group"><label>Barra Superior</label><input type="color" id="lt-top-bg" value="#0066FF"></div>
                 <div class="input-group"><label>Barra Inferior</label><input type="color" id="lt-bottom-bg" value="#FFD700"></div>
-                <div class="input-group"><label>Fundo Logo</label><input type="color" id="lt-logo-bg" value="#1a1a1a"></div>
+                <div class="input-group"><label>Fundo Logo</label><input type="color" id="lt-logo-bg" value="#10152b"></div>
               </div>
               <div class="input-row input-row-3">
                 <div class="input-group"><label>Texto Nome</label><input type="color" id="lt-name-color" value="#FFFFFF"></div>
-                <div class="input-group"><label>Texto Função</label><input type="color" id="lt-role-color" value="#1a1a1a"></div>
-                <div class="input-group"><label>URL Logo</label><input type="text" id="lt-logo-url" placeholder="https://..."></div>
+                <div class="input-group"><label>Texto Função</label><input type="color" id="lt-role-color" value="#10152b"></div>
+                <div class="input-group"><label>URL Logo</label><input type="text" id="lt-logo-url" value="/src/sbc_assets/sabia-voando.png" placeholder="/src/sbc_assets/sabia-voando.png"></div>
               </div>
               <div class="input-row">
                 <div class="input-group"><label>Detalhe 1</label><input type="color" id="lt-geo1" value="#FF1493"></div>
@@ -361,12 +362,12 @@
               <div class="input-row input-row-3" style="margin-top:8px;">
                 <div class="input-group"><label>Barra Superior</label><input type="color" id="team-lt-top-bg" value="#0066FF"></div>
                 <div class="input-group"><label>Barra Inferior</label><input type="color" id="team-lt-bottom-bg" value="#FFD700"></div>
-                <div class="input-group"><label>Fundo Logo</label><input type="color" id="team-lt-logo-bg" value="#1a1a1a"></div>
+                <div class="input-group"><label>Fundo Logo</label><input type="color" id="team-lt-logo-bg" value="#10152b"></div>
               </div>
               <div class="input-row input-row-3">
                 <div class="input-group"><label>Texto Time</label><input type="color" id="team-lt-name-color" value="#FFFFFF"></div>
-                <div class="input-group"><label>Texto Membros</label><input type="color" id="team-lt-members-color" value="#1a1a1a"></div>
-                <div class="input-group"><label>URL Logo</label><input type="text" id="team-lt-logo" placeholder="https://..."></div>
+                <div class="input-group"><label>Texto Membros</label><input type="color" id="team-lt-members-color" value="#10152b"></div>
+                <div class="input-group"><label>URL Logo</label><input type="text" id="team-lt-logo" value="/src/sbc_assets/sabia-voando.png" placeholder="/src/sbc_assets/sabia-voando.png"></div>
               </div>
             </details>
 
@@ -391,7 +392,7 @@
               </label>
             </div>
 
-            <div class="input-group"><label>Texto Superior</label><input type="text" id="sports-title" placeholder="AO VIVO • MARATONA MINEIRA" maxlength="120"></div>
+            <div class="input-group"><label>Texto Superior</label><input type="text" id="sports-title" placeholder="AO VIVO • MARATONA SBC" maxlength="120"></div>
             <div class="input-group"><label>Texto Inferior</label><input type="text" id="sports-subtitle" placeholder="ETAPA FINAL • BELO HORIZONTE" maxlength="120"></div>
 
             <details class="lt-colors-details">
@@ -399,12 +400,12 @@
               <div class="input-row input-row-3" style="margin-top:8px;">
                 <div class="input-group"><label>Barra Superior</label><input type="color" id="sports-top-bg" value="#0066FF"></div>
                 <div class="input-group"><label>Barra Inferior</label><input type="color" id="sports-bottom-bg" value="#FFD700"></div>
-                <div class="input-group"><label>Fundo Logo</label><input type="color" id="sports-logo-bg" value="#1a1a1a"></div>
+                <div class="input-group"><label>Fundo Logo</label><input type="color" id="sports-logo-bg" value="#10152b"></div>
               </div>
               <div class="input-row input-row-3">
                 <div class="input-group"><label>Texto Superior</label><input type="color" id="sports-top-text" value="#FFFFFF"></div>
-                <div class="input-group"><label>Texto Inferior</label><input type="color" id="sports-bottom-text" value="#1a1a1a"></div>
-                <div class="input-group"><label>URL Logo</label><input type="text" id="sports-logo-url" placeholder="https://..."></div>
+                <div class="input-group"><label>Texto Inferior</label><input type="color" id="sports-bottom-text" value="#10152b"></div>
+                <div class="input-group"><label>URL Logo</label><input type="text" id="sports-logo-url" value="/src/sbc_assets/sabia-voando.png" placeholder="/src/sbc_assets/sabia-voando.png"></div>
               </div>
               <div class="input-row">
                 <div class="input-group"><label>Detalhe 1</label><input type="color" id="sports-geo1" value="#FF1493"></div>

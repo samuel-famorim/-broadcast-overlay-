@@ -15,11 +15,15 @@ const AUTH_PASS = process.env.CONTROL_PASS || 'maratona';
 const authMiddleware = basicAuth({
   users: { [AUTH_USER]: AUTH_PASS },
   challenge: true,
-  realm: 'Painel de Controle - Maratona Mineira'
+  realm: 'Painel de Controle - Maratona SBC'
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
+
+app.get('/', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.get('/control', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'control.html'));
@@ -29,8 +33,14 @@ app.get('/display', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'display.html'));
 });
 
+let currentBroadcastSettings = {
+  marathonName: 'Maratona SBC de Programação',
+  activeTheme: 'final2026'
+};
+
 io.on('connection', (socket) => {
   console.log(`[connect] ${socket.id}`);
+  socket.emit('settings-updated', currentBroadcastSettings);
 
   socket.on('trigger-medal', (data) => {
     console.log(`[medal] ${data.teamName} - ${data.medalType || 'gold'} - ${data.position || 'center'}`);
@@ -180,7 +190,8 @@ io.on('connection', (socket) => {
 
   socket.on('update-settings', (data) => {
     console.log('[settings] update', data);
-    io.emit('settings-updated', data);
+    Object.assign(currentBroadcastSettings, data);
+    io.emit('settings-updated', currentBroadcastSettings);
   });
 
   // Envia histórico de chat ao conectar

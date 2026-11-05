@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub - Overlays Maratona SBC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anta&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0e27;
+      --bg-card: #10152b;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #ffffff;
+      --neon-cyan: #00e5ff;
+      --neon-blue: #2962ff;
+      --neon-orange: #ff6a00;
+      --neon-purple: #9d00ff;
+      --font-anta: 'Anta', sans-serif;
+      --font-main: 'Montserrat', sans-serif;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, #152069 0%, #0c0b4d 50%, #032833 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 90%;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .hub-title {
+      font-family: var(--font-anta);
+      font-size: 3rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hub-subtitle {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 50px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: var(--maratona-gradient, linear-gradient(90deg, var(--neon-blue), var(--neon-cyan)));
+      transition: height 0.3s ease;
+      opacity: 0.8;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0, 229, 255, 0.1);
+      border-color: rgba(0, 229, 255, 0.3);
+    }
+
+    .project-card:hover::before {
+      height: 100%;
+      opacity: 0.05;
+    }
+
+    .project-card.final2026::before {
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-orange), var(--neon-cyan));
+    }
+
+    .card-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      object-fit: contain;
+    }
+
+    .card-title {
+      font-family: var(--font-anta);
+      font-size: 1.5rem;
+      margin: 0 0 10px 0;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    
+    .card-badge {
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .badge-padrao { background: rgba(41, 98, 255, 0.2); color: var(--neon-blue); border: 1px solid rgba(41, 98, 255, 0.4); }
+    .badge-final { background: rgba(157, 0, 255, 0.2); color: #d896ff; border: 1px solid rgba(157, 0, 255, 0.4); }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-top: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 12px 10px;
+      border-radius: 8px;
+      border: none;
+      font-family: var(--font-main);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 10;
+      display: inline-block;
+    }
+
+    .btn-control {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .btn-control:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .btn-display {
+      background: var(--neon-cyan);
+      color: var(--bg);
+    }
+    .btn-display:hover {
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="hub-title">CENTRAL DE TRANSMISSÃO</h1>
+    <div class="hub-subtitle">Escolha o projeto ativo para o broadcast</div>
+
+    <div class="projects-grid">
+      
+      <!-- Card Padrão -->
+      <div class="project-card padrao" onclick="window.location.href='/control?theme=padrao'">
+        <img src="/src/sbc_assets/logo-maratona.png" alt="Maratona" class="card-icon">
+        <h2 class="card-title">Maratona Padrão</h2>
+        <p class="card-desc">Estética colorida em tons de Azul e Ciano. Ideal para eventos estaduais e regionais com o visual limpo.</p>
+        <div style="margin-bottom: 20px;"><span class="card-badge badge-padrao">Default</span></div>
+        
+        <div class="actions-row">
+          <a href="/control?theme=padrao" class="btn-action btn-control" onclick="event.stopPropagation();">Painel (Control)</a>
+          <a href="/display?theme=padrao" class="btn-action btn-display" target="_blank" onclick="event.stopPropagation();">Overlay (OBS)</a>
+        </div>
+      </div>
+
+      <!-- Card Final 2026 -->
+      <div class="project-card final2026" onclick="window.location.href='/control?theme=final2026'">
+        <img src="/src/sbc_assets/simbolo.png" alt="Final 2026" class="card-icon">
+        <h2 class="card-title">Maratona Final 2026</h2>
+        <p class="card-desc">Visual Dark Glassmorphism, com bordas finas e detalhes em neon Roxo e Laranja. Estética oficial da final de Uberlândia.</p>
+        <div style="margin-bottom: 20px;"><span class="card-badge badge-final">Novo Design</span></div>
+        
+        <div class="actions-row">
+          <a href="/control?theme=final2026" class="btn-action btn-control" onclick="event.stopPropagation();">Painel (Control)</a>
+          <a href="/display?theme=final2026" class="btn-action btn-display" target="_blank" onclick="event.stopPropagation();">Overlay (OBS)</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

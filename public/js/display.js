@@ -1,6 +1,13 @@
+
+const urlParamsDisplay = new URLSearchParams(window.location.search);
+const themeDisplay = urlParamsDisplay.get('theme');
+if (themeDisplay === 'final2026') {
+  document.body.classList.add('theme-final2026');
+}
+
 /* ============================================
    DISPLAY OVERLAY - Motor de animações v2.0
-   Maratona Mineira de Programação
+   Maratona SBC de Programação
    ============================================ */
 
 const socket = io();
@@ -250,14 +257,16 @@ function showLowerThird(side, name, role, options) {
   resetOverlay(el);
 
   options = options || {};
-  const logoBgColor = options.logoBgColor || '#1a1a1a';
+  const logoBgColor = options.logoBgColor || '#0b0e27';
   const topBgColor = options.topBgColor || '#0066FF';
   const bottomBgColor = options.bottomBgColor || '#FFD700';
   const nameColor = options.nameColor || '#FFFFFF';
   const roleColor = options.roleColor || '#1a1a1a';
   const geoColor1 = options.geoColor1 || '#FF1493';
   const geoColor2 = options.geoColor2 || '#FFD700';
-  const logoUrl = options.logoUrl || '';
+  const logoUrl = (options.logoUrl && !options.logoUrl.includes('logo-maratona.png'))
+    ? options.logoUrl
+    : '/src/sbc_assets/sabia-voando.png';
 
   // Bloco logo
   el.querySelector('.lt-sports-logo-block').style.background = logoBgColor;
@@ -790,7 +799,7 @@ function showSportsLT(options) {
   options = options || {};
   resetOverlay(sportsLt);
 
-  const logoBgColor = options.logoBgColor || '#1a1a1a';
+  const logoBgColor = options.logoBgColor || '#0b0e27';
   const topBgColor = options.topBgColor || '#0066FF';
   const bottomBgColor = options.bottomBgColor || '#FFD700';
   const topTextColor = options.topTextColor || '#FFFFFF';
@@ -799,7 +808,9 @@ function showSportsLT(options) {
   const geoColor2 = options.geoColor2 || '#FFD700';
   const titleText = options.titleText || '';
   const subtitleText = options.subtitleText || '';
-  const logoUrl = options.logoUrl || '';
+  const logoUrl = (options.logoUrl && !options.logoUrl.includes('logo-maratona.png'))
+    ? options.logoUrl
+    : '/src/sbc_assets/sabia-voando.png';
 
   sportsLt.querySelector('.sports-logo-block').style.background = logoBgColor;
   sportsLt.querySelector('.sports-bar-top').style.background = topBgColor;
@@ -842,20 +853,24 @@ function showTeamLT(teamName, member1, member2, member3, options) {
   teamLt.classList.remove('hiding');
 
   options = options || {};
-  const logoBgColor = options.logoBgColor || '#1a1a1a';
+  const logoBgColor = options.logoBgColor || '#0b0e27';
   const topBgColor = options.topBgColor || '#0066FF';
   const bottomBgColor = options.bottomBgColor || '#FFD700';
   const nameColor = options.nameColor || '#FFFFFF';
   const membersColor = options.membersColor || '#1a1a1a';
   const geoColor1 = options.geoColor1 || '#FF1493';
   const geoColor2 = options.geoColor2 || '#FFD700';
-  const logoUrl = options.logoUrl || '';
+  const logoUrl = (options.logoUrl && !options.logoUrl.includes('logo-maratona.png'))
+    ? options.logoUrl
+    : '/src/sbc_assets/sabia-voando.png';
 
   // Cores
   teamLt.querySelector('.team-lt-logo-block').style.background = logoBgColor;
   teamLt.querySelector('.team-lt-bar-top').style.background = topBgColor;
   teamLt.querySelector('.team-lt-bar-bottom').style.background = bottomBgColor;
+  teamLt.querySelector('.team-lt-name').style.setProperty('--name-color', nameColor);
   teamLt.querySelector('.team-lt-name').style.color = nameColor;
+  teamLt.querySelector('.team-lt-members').style.setProperty('--role-color', membersColor);
   teamLt.querySelector('.team-lt-members').style.color = membersColor;
 
   const geoTop = teamLt.querySelector('.team-lt-logo-block .lt-sports-geo-top');
@@ -969,9 +984,13 @@ socket.on('show-contest-end', () => showContestEnd());
 socket.on('show-frozen', () => showFrozen());
 socket.on('show-blind', () => showBlind());
 // Configurações globais
-let marathonName = 'Maratona Mineira de Programação';
+let marathonName = 'Maratona SBC de Programação';
 
 socket.on('settings-updated', (data) => {
+  if (data.activeTheme) {
+    document.body.className = '';
+    if (data.activeTheme === 'final2026') document.body.classList.add('theme-final2026');
+  }
   if (data.marathonName) {
     marathonName = data.marathonName;
     // Atualiza overlays que usam o nome

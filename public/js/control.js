@@ -1,6 +1,6 @@
 /* ============================================
    PAINEL DE CONTROLE v3.0 - Tabs + Presets
-   Maratona Mineira de Programação
+   Maratona SBC de Programação
    ============================================ */
 
 const socket = io();
@@ -381,6 +381,12 @@ function triggerCustomAlert() {
 // ============================================
 
 function getLowerThirdOptions() {
+  const customLogo = document.getElementById('lt-logo-url').value.trim();
+  const globalLogo = document.getElementById('global-logo-url').value.trim();
+  const resolvedLogo = (customLogo && customLogo !== '/src/sbc_assets/logo-maratona.png')
+    ? customLogo
+    : ((globalLogo && globalLogo !== '/src/sbc_assets/logo-maratona.png') ? globalLogo : '/src/sbc_assets/sabia-voando.png');
+
   return {
     topBgColor: document.getElementById('lt-top-bg').value,
     bottomBgColor: document.getElementById('lt-bottom-bg').value,
@@ -389,7 +395,7 @@ function getLowerThirdOptions() {
     roleColor: document.getElementById('lt-role-color').value,
     geoColor1: document.getElementById('lt-geo1').value,
     geoColor2: document.getElementById('lt-geo2').value,
-    logoUrl: document.getElementById('lt-logo-url').value.trim()
+    logoUrl: resolvedLogo
   };
 }
 
@@ -437,6 +443,12 @@ function applyBothLTs() {
 function applyTeamLT() {
   const teamName = document.getElementById('team-lt-name').value.trim();
   if (!teamName) { toast('Digite o nome do time!', 'error'); return; }
+  const customLogo = document.getElementById('team-lt-logo').value.trim();
+  const globalLogo = document.getElementById('global-logo-url').value.trim();
+  const resolvedLogo = (customLogo && customLogo !== '/src/sbc_assets/logo-maratona.png')
+    ? customLogo
+    : ((globalLogo && globalLogo !== '/src/sbc_assets/logo-maratona.png') ? globalLogo : '/src/sbc_assets/sabia-voando.png');
+
   const options = {
     logoBgColor: document.getElementById('team-lt-logo-bg').value,
     topBgColor: document.getElementById('team-lt-top-bg').value,
@@ -444,7 +456,7 @@ function applyTeamLT() {
     nameColor: document.getElementById('team-lt-name-color').value,
     membersColor: document.getElementById('team-lt-members-color').value,
     geoColor1: '#FF1493', geoColor2: '#FFD700',
-    logoUrl: document.getElementById('team-lt-logo').value.trim()
+    logoUrl: resolvedLogo
   };
   const m1 = document.getElementById('team-lt-m1').value.trim();
   const m2 = document.getElementById('team-lt-m2').value.trim();
@@ -498,6 +510,12 @@ function toggleSponsorsLT(active) {
 // ============================================
 
 function getSportsLTOptions() {
+  const customLogo = document.getElementById('sports-logo-url').value.trim();
+  const globalLogo = document.getElementById('global-logo-url').value.trim();
+  const resolvedLogo = (customLogo && customLogo !== '/src/sbc_assets/logo-maratona.png')
+    ? customLogo
+    : ((globalLogo && globalLogo !== '/src/sbc_assets/logo-maratona.png') ? globalLogo : '/src/sbc_assets/sabia-voando.png');
+
   return {
     logoBgColor: document.getElementById('sports-logo-bg').value,
     topBgColor: document.getElementById('sports-top-bg').value,
@@ -508,7 +526,7 @@ function getSportsLTOptions() {
     geoColor2: document.getElementById('sports-geo2').value,
     titleText: document.getElementById('sports-title').value.trim(),
     subtitleText: document.getElementById('sports-subtitle').value.trim(),
-    logoUrl: document.getElementById('sports-logo-url').value.trim()
+    logoUrl: resolvedLogo
   };
 }
 
@@ -1281,3 +1299,197 @@ function toast(message, type) {
   container.appendChild(el);
   setTimeout(() => el.remove(), 2500);
 }
+
+// Inject default SBC Identity preset on load
+window.addEventListener('DOMContentLoaded', () => {
+  const type = 'globalcolors';
+  const presets = getPresets(type);
+  const sbcPresetExists = presets.find(p => p.label === 'Identidade Maratona SBC');
+  
+  if (!sbcPresetExists) {
+    presets.push({
+      label: 'Identidade Maratona SBC',
+      colors: {
+        topBg: '#2962ff',
+        bottomBg: '#00e5ff',
+        logoBg: '#10152b',
+        nameColor: '#ffffff',
+        roleColor: '#0b0e27',
+        geo1: '#ff6a00',
+        geo2: '#9d00ff',
+        logoUrl: '/src/sbc_assets/sabia-voando.png'
+      }
+    });
+    savePresetsArr(type, presets);
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const typeBarra = 'barra';
+  const presetsBarra = getPresets(typeBarra);
+  const sbcBarraExists = presetsBarra.find(p => p.label === 'Identidade Maratona SBC');
+  
+  if (!sbcBarraExists) {
+    presetsBarra.push({
+      label: 'Identidade Maratona SBC',
+      titleText: 'AO VIVO • MARATONA SBC',
+      subtitleText: 'PROGRAMAÇÃO',
+      colors: {
+        topBg: '#2962ff',
+        bottomBg: '#00e5ff',
+        logoBg: '#10152b',
+        nameColor: '#ffffff',
+        roleColor: '#0b0e27',
+        geo1: '#ff6a00',
+        geo2: '#9d00ff',
+        logoUrl: '/src/sbc_assets/sabia-voando.png'
+      }
+    });
+    savePresetsArr(typeBarra, presetsBarra);
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const type = 'pessoas';
+  const presets = getPresets(type);
+  const exists = presets.find(p => p.label === 'Identidade Maratona SBC');
+  
+  if (!exists) {
+    presets.push({
+      label: 'Identidade Maratona SBC',
+      leftName: 'NOME DO CONVIDADO',
+      leftRole: 'ESPECIALISTA',
+      rightName: 'NOME DO HOST',
+      rightRole: 'APRESENTADOR',
+      colors: {
+        topBg: '#2962ff',
+        bottomBg: '#00e5ff',
+        logoBg: '#10152b',
+        nameColor: '#ffffff',
+        roleColor: '#0b0e27',
+        geo1: '#ff6a00',
+        geo2: '#9d00ff',
+        logoUrl: '/src/sbc_assets/sabia-voando.png'
+      }
+    });
+    savePresetsArr(type, presets);
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const type = 'time';
+  const presets = getPresets(type);
+  const exists = presets.find(p => p.label === 'Identidade Maratona SBC');
+  
+  if (!exists) {
+    presets.push({
+      label: 'Identidade Maratona SBC',
+      teamName: 'NOME DO TIME',
+      teamMembers: 'Membro 1, Membro 2, Membro 3',
+      colors: {
+        topBg: '#2962ff',
+        bottomBg: '#00e5ff',
+        logoBg: '#10152b',
+        nameColor: '#ffffff',
+        roleColor: '#0b0e27',
+        geo1: '#ff6a00',
+        geo2: '#9d00ff',
+        logoUrl: '/src/sbc_assets/sabia-voando.png'
+      }
+    });
+    savePresetsArr(type, presets);
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
+    const presets = getPresets(type);
+    
+    // Rename existing preset & update logo to sabia-voando.png
+    presets.forEach(p => {
+      if (p.label === 'Identidade Maratona SBC' || p.label === 'Maratona Padrão') {
+        p.label = 'Maratona Padrão';
+        if (p.colors) p.colors.logoUrl = '/src/sbc_assets/sabia-voando.png';
+      }
+      if (p.label === 'Maratona Final 2026') {
+        if (p.colors) p.colors.logoUrl = '/src/sbc_assets/sabia-voando.png';
+      }
+    });
+
+    // Add new preset if not exists
+    const finalExists = presets.find(p => p.label === 'Maratona Final 2026');
+    if (!finalExists) {
+      const newPreset = {
+        label: 'Maratona Final 2026',
+        colors: {
+          topBg: '#10152b', // Escuro profundo do site
+          bottomBg: '#0b0e27', // Ainda mais escuro
+          logoBg: '#10152b', 
+          nameColor: '#00e5ff', // Texto nome em Ciano Neon
+          roleColor: '#94a3b8', // Texto role em cinza claro (muted)
+          geo1: '#ff6a00',
+          geo2: '#9d00ff',
+          logoUrl: '/src/sbc_assets/sabia-voando.png'
+        }
+      };
+
+      if (type === 'pessoas') {
+        newPreset.leftName = 'NOME DA PESSOA';
+        newPreset.leftRole = 'CARGO / FUNÇÃO';
+        newPreset.rightName = 'NOME DA PESSOA';
+        newPreset.rightRole = 'CARGO / FUNÇÃO';
+      } else if (type === 'time') {
+        newPreset.teamName = 'NOME DO TIME FINALISTA';
+        newPreset.teamMembers = 'COMPETIDOR 1, COMPETIDOR 2, COMPETIDOR 3';
+      } else if (type === 'barra') {
+        newPreset.titleText = 'FINAL BRASILEIRA 2026';
+        newPreset.subtitleText = 'UBERLÂNDIA/MG';
+      }
+
+      presets.push(newPreset);
+    }
+    
+    savePresetsArr(type, presets);
+  });
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Garantir logo padrão do Sabiá nos campos
+  ['global-logo-url', 'lt-logo-url', 'team-lt-logo', 'sports-logo-url'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && (!el.value || el.value.includes('logo-maratona.png'))) {
+      el.value = '/src/sbc_assets/sabia-voando.png';
+    }
+  });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const themeParam = urlParams.get('theme') || 'final2026';
+  
+  if (themeParam === 'final2026') {
+    socket.emit('update-settings', { activeTheme: 'final2026' });
+    ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
+      const presets = getPresets(type);
+      const idx = presets.findIndex(p => p.label === 'Maratona Final 2026');
+      if (idx !== -1) {
+        const select = document.getElementById('preset-' + type);
+        if (select) {
+          select.value = idx;
+          loadPreset(type);
+        }
+      }
+    });
+  } else if (themeParam === 'padrao') {
+    socket.emit('update-settings', { activeTheme: 'padrao' });
+    ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
+      const presets = getPresets(type);
+      const idx = presets.findIndex(p => p.label === 'Maratona Padrão');
+      if (idx !== -1) {
+        const select = document.getElementById('preset-' + type);
+        if (select) {
+          select.value = idx;
+          loadPreset(type);
+        }
+      }
+    });
+  }
+});

@@ -1,5 +1,5 @@
 /* ============================================
-   DISPLAY OVERLAY - Maratona Mineira
+   DISPLAY OVERLAY - Maratona SBC
    Estilo CazéTV - Transmissão ao vivo
    v2.0 - Sistema completo de overlays
    ============================================ */
@@ -11,16 +11,26 @@
 }
 
 :root {
+  --font-anta: 'Anta', sans-serif;
+  --maratona-gradient: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-blue) 33%, var(--neon-purple) 66%, var(--neon-orange) 100%);
+  --maratona-gradient-horizontal: linear-gradient(90deg, var(--neon-cyan) 0%, var(--neon-blue) 33%, var(--neon-purple) 66%, var(--neon-orange) 100%);
   --gold: #FFD700;
   --gold-dark: #B8860B;
   --silver: #C0C0C0;
   --silver-dark: #808080;
   --bronze: #CD7F32;
   --bronze-dark: #8B4513;
-  --neon-green: #00FF88;
-  --neon-red: #FF3366;
-  --neon-yellow: #FFD700;
-  --neon-blue: #00BFFF;
+
+  --bg-dark: #0b0e27; 
+  --neon-cyan: #00e5ff;
+  --neon-blue: #2962ff;
+  --neon-orange: #ff6a00;
+  --neon-purple: #9d00ff;
+  --card-solid: #10152b; 
+  --card-base-color: #10113c; 
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --accent: #00e5ff;
 }
 
 body {
@@ -112,6 +122,7 @@ body {
 #medal-overlay.position-right .medal-team-name {
   font-size: 28px;
   letter-spacing: 2px;
+  font-family: var(--font-anta);
 }
 
 #medal-overlay.position-right .medal-subtitle {
@@ -370,8 +381,8 @@ body {
 }
 
 .alert-card.wrong {
-  border-color: rgba(255,51,102,0.4);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,51,102,0.15), 0 0 80px rgba(255,51,102,0.1);
+  border-color: rgba(255,106,0,0.4);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,106,0,0.15), 0 0 80px rgba(255,106,0,0.1);
 }
 
 .alert-card.pending {
@@ -452,11 +463,11 @@ body {
   position: relative;
   width: 110px;
   min-width: 110px;
-  background: #1a1a1a;
+  background: var(--card-solid);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px 0 0 8px;
+  border-radius: 12px 0 0 12px;
 }
 
 .lt-sports-geo-top,
@@ -468,8 +479,9 @@ body {
   border-radius: 2px;
 }
 
-.lt-sports-geo-top { top: -5px; background: #FF1493; }
-.lt-sports-geo-bottom { bottom: -5px; background: #FFD700; }
+.lt-sports-geo-top { top: -5px; background: var(--neon-purple); }
+.lt-sports-geo-bottom { bottom: -5px; background: var(--maratona-gradient);
+  color: var(--bg-dark); }
 
 .lt-sports-logo-circle {
   width: 68px;
@@ -487,7 +499,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 6px;
+  padding: 4px;
 }
 
 /* --- Bloco Texto --- */
@@ -499,40 +511,43 @@ body {
 }
 
 .lt-sports-bar-top {
-  background: #0066FF;
+  background: var(--neon-blue);
   padding: 10px 28px;
   display: flex;
   align-items: center;
   min-height: 50px;
-  border-radius: 0 8px 0 0;
+  border-radius: 0 12px 0 0;
 }
 
 .lt-sports-bar-bottom {
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
   padding: 8px 28px;
   display: flex;
   align-items: center;
   min-height: 50px;
-  border-radius: 0 0 8px 0;
+  border-radius: 0 0 12px 0;
 }
 
 .lt-sports-name {
   font-size: 28px;
   font-weight: 900;
-  color: #fff;
+  color: var(--name-color, #fff);
   text-transform: uppercase;
   letter-spacing: 2px;
   white-space: nowrap;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  font-family: var(--font-anta);
 }
 
 .lt-sports-role {
   font-size: 20px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--role-color, var(--bg-dark));
   text-transform: uppercase;
   letter-spacing: 2px;
   white-space: nowrap;
+  font-family: var(--font-anta);
 }
 
 /* --- Animações --- */
@@ -576,7 +591,8 @@ body {
 .ticker-accent {
   width: 8px;
   min-width: 8px;
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
   box-shadow: 0 0 12px rgba(255,215,0,0.5);
   border-radius: 4px 0 0 4px;
   transition: background 0.3s, box-shadow 0.3s;
@@ -603,6 +619,7 @@ body {
   text-shadow: 0 0 10px rgba(255,215,0,0.5);
   animation: tickerScroll var(--ticker-speed, 30s) linear infinite;
   padding-left: 100%;
+  font-family: var(--font-anta);
 }
 
 @keyframes tickerScroll {
@@ -658,7 +675,8 @@ body {
   left: 50%;
   width: 4px;
   height: 60px;
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
   transform-origin: bottom center;
   border-radius: 2px;
   animation: clockTick 0.5s linear infinite;
@@ -668,7 +686,8 @@ body {
   position: absolute;
   width: 16px;
   height: 16px;
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
   border-radius: 50%;
   top: 50%;
   left: 50%;
@@ -708,9 +727,9 @@ body {
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle, #FF3366, #990033);
-  border: 6px solid #FF3366;
-  box-shadow: 0 0 60px rgba(255,51,102,0.5), 0 0 120px rgba(255,51,102,0.25);
+  background: radial-gradient(circle, var(--neon-orange), #993f00);
+  border: 6px solid var(--neon-orange);
+  box-shadow: 0 0 60px rgba(255,106,0,0.5), 0 0 120px rgba(255,106,0,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -933,6 +952,7 @@ body {
   letter-spacing: 6px;
   text-shadow: 0 0 40px rgba(255,255,255,0.4), 0 0 80px rgba(255,255,255,0.2), 0 4px 8px rgba(0,0,0,0.6);
   line-height: 1;
+  font-family: var(--font-anta);
 }
 
 .event-subtitle {
@@ -1006,11 +1026,12 @@ body {
 
 /* Barras do problema (direita) */
 #problem-lt .lt-sports-bar-top {
-  background: #0066FF;
+  background: var(--neon-blue);
 }
 
 #problem-lt .lt-sports-bar-bottom {
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
 }
 
 @keyframes probSlideIn {
@@ -1310,6 +1331,7 @@ body {
   color: #FFD700;
   text-transform: uppercase;
   letter-spacing: 3px;
+  font-family: var(--font-anta);
 }
 
 .scoreboard-table { padding: 8px 0; }
@@ -1431,6 +1453,7 @@ body {
   color: #FFD700;
   text-transform: uppercase;
   letter-spacing: 3px;
+  font-family: var(--font-anta);
 }
 
 .medaltable-table { padding: 8px 0; }
@@ -1493,9 +1516,9 @@ body {
   border: 1px solid rgba(0,255,136,0.3);
 }
 .problemstats-badge.hard {
-  background: rgba(255,51,102,0.15);
-  color: #FF3366;
-  border: 1px solid rgba(255,51,102,0.3);
+  background: rgba(255,106,0,0.15);
+  color: var(--neon-orange);
+  border: 1px solid rgba(255,106,0,0.3);
 }
 .problemstats-badge.normal {
   background: rgba(255,255,255,0.05);
@@ -1553,11 +1576,11 @@ body {
   position: relative;
   width: 140px;
   min-width: 140px;
-  background: #1a1a1a;
+  background: var(--card-solid);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px 0 0 8px;
+  border-radius: 12px 0 0 12px;
   overflow: visible;
 }
 
@@ -1573,12 +1596,13 @@ body {
 
 .sports-geo-top {
   top: -6px;
-  background: #FF1493;
+  background: var(--neon-purple);
 }
 
 .sports-geo-bottom {
   bottom: -6px;
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
 }
 
 .sports-logo-circle {
@@ -1597,7 +1621,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 8px;
+  padding: 4px;
 }
 
 /* --- Bloco de Texto --- */
@@ -1611,12 +1635,12 @@ body {
 }
 
 .sports-bar-top {
-  background: #0066FF;
+  background: var(--neon-blue);
   padding: 12px 32px;
   display: flex;
   align-items: center;
   min-height: 60px;
-  border-radius: 0 8px 0 0;
+  border-radius: 0 12px 0 0;
 }
 
 .sports-title-text {
@@ -1632,18 +1656,19 @@ body {
 }
 
 .sports-bar-bottom {
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
   padding: 10px 32px;
   display: flex;
   align-items: center;
   min-height: 60px;
-  border-radius: 0 0 8px 0;
+  border-radius: 0 0 12px 0;
 }
 
 .sports-subtitle-text {
   font-size: 24px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--bg-dark);
   text-transform: uppercase;
   letter-spacing: 2px;
   white-space: normal;
@@ -1691,11 +1716,11 @@ body {
   position: relative;
   width: 110px;
   min-width: 110px;
-  background: #1a1a1a;
+  background: var(--card-solid);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px 0 0 8px;
+  border-radius: 12px 0 0 12px;
 }
 
 .team-lt-text-block {
@@ -1705,37 +1730,39 @@ body {
 }
 
 .team-lt-bar-top {
-  background: #0066FF;
+  background: var(--neon-blue);
   padding: 10px 32px;
   display: flex;
   align-items: center;
   min-height: 50px;
-  border-radius: 0 8px 0 0;
+  border-radius: 0 12px 0 0;
 }
 
 .team-lt-bar-bottom {
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
   padding: 8px 32px;
   display: flex;
   align-items: center;
   min-height: 50px;
-  border-radius: 0 0 8px 0;
+  border-radius: 0 0 12px 0;
 }
 
 .team-lt-name {
   font-size: 32px;
   font-weight: 900;
-  color: #fff;
+  color: var(--name-color, #fff);
   text-transform: uppercase;
   letter-spacing: 3px;
   white-space: nowrap;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  font-family: var(--font-anta);
 }
 
 .team-lt-members {
   font-size: 22px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--role-color, var(--bg-dark));
   text-transform: uppercase;
   letter-spacing: 2px;
   white-space: nowrap;
@@ -1793,13 +1820,13 @@ body {
 }
 
 .sponsors-accent-left {
-  background: linear-gradient(135deg, #FF1493, #FF6B6B, #FFD700);
-  border-radius: 8px 0 0 8px;
+  background: var(--maratona-gradient);
+  border-radius: 12px 0 0 12px;
 }
 
 .sponsors-accent-right {
-  background: linear-gradient(225deg, #00BFFF, #4ECDC4, #00FF88);
-  border-radius: 0 8px 8px 0;
+  background: linear-gradient(225deg, var(--neon-cyan) 0%, var(--neon-blue) 33%, var(--neon-purple) 66%, var(--neon-orange) 100%);
+  border-radius: 0 12px 12px 0;
 }
 
 /* Barras coloridas animadas dentro das laterais */
@@ -1829,22 +1856,23 @@ body {
 
 .sponsors-geo-left-top {
   top: -5px; left: -5px;
-  background: #FF1493;
+  background: var(--neon-purple);
 }
 
 .sponsors-geo-left-bottom {
   bottom: -5px; left: -5px;
-  background: #FFD700;
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
 }
 
 .sponsors-geo-right-top {
   top: -5px; right: -5px;
-  background: #00BFFF;
+  background: var(--neon-cyan);
 }
 
 .sponsors-geo-right-bottom {
   bottom: -5px; right: -5px;
-  background: #00FF88;
+  background: var(--maratona-gradient-horizontal);
 }
 
 /* --- Fundo branco com logos --- */
@@ -1855,7 +1883,7 @@ body {
   justify-content: space-around;
   gap: 24px;
   padding: 8px 32px;
-  background: #FFFFFF;
+  background: var(--card-solid);
   flex: 1;
 }
 
@@ -1876,4 +1904,213 @@ body {
 @keyframes sponsorsSlideDown {
   from { bottom: 60px; opacity: 1; transform: translateX(-50%); }
   to   { bottom: -200px; opacity: 0; transform: translateX(-50%); }
+}
+
+
+/* --- Maratona Aesthetics Overlays --- */
+
+.lt-sports-bar-top, .team-lt-bar-top {
+  position: relative;
+  overflow: hidden;
+}
+
+.lt-sports-bar-top::after, .team-lt-bar-top::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent 50%, rgba(0,0,0,0.1));
+  pointer-events: none;
+}
+
+.lt-sports-logo-block, .team-lt-logo-block {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glassmorphism subtle glow on logo blocks */
+.lt-sports-logo-block::after, .team-lt-logo-block::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Enhance accents */
+.ticker-accent, .scoreboard-accent {
+  background: var(--maratona-gradient-horizontal) !important;
+}
+
+/* Alert overlay glow */
+.alert-card {
+  box-shadow: 0 10px 40px rgba(0, 229, 255, 0.2), 0 0 20px rgba(157, 0, 255, 0.2);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.alert-message {
+  font-family: var(--font-anta);
+}
+
+.medaltable-thead span, .scoreboard-thead span { 
+  font-family: var(--font-anta); 
+  letter-spacing: 1px;
+}
+.firstac-problem, .firstac-team {
+  font-family: var(--font-anta);
+}
+.prob-acs-label {
+  font-family: var(--font-anta);
+  letter-spacing: 2px;
+}
+
+
+/* --- Final 2026 Dark Aesthetics (When using dark bottoms) --- */
+.lt-sports-bar-top {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+.lt-sports-bar-bottom {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lt-sports-logo-block {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Specific left/right borders based on position */
+#lowerthird-right .lt-sports-bar-top {
+  border-right: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+#lowerthird-right .lt-sports-bar-bottom {
+  border-right: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+#lowerthird-right .lt-sports-logo-block {
+  border-left: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sports-lt-left, .sports-lt-right, .team-lt-inner {
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.8));
+}
+
+
+/* --- Texture & Wave Pattern overlay (Final 2026 aesthetics) --- */
+.scoreboard-bg::after,
+.medaltable-bg::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('/src/sbc_assets/line-orange.png'), url('/src/sbc_assets/line-yellow.png');
+  background-repeat: no-repeat;
+  background-position: right bottom, left top;
+  background-size: 40%, 40%;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.scoreboard-content, .medaltable-content {
+  overflow: hidden;
+}
+
+.scoreboard-content::before, .medaltable-content::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 80% 80%, rgba(255, 106, 0, 0.05), transparent 40%),
+              radial-gradient(circle at 20% 20%, rgba(157, 0, 255, 0.05), transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================
+   THEME OVERRIDES: FINAL 2026 (DARK/GLASS/NEON)
+   ============================================ */
+
+body.theme-final2026 .lt-sports-logo-circle,
+body.theme-final2026 .sports-logo-circle {
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.18) 0%, rgba(11, 14, 39, 0.95) 100%) !important;
+  border: 2px solid rgba(0, 229, 255, 0.5) !important;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.3) !important;
+}
+
+body.theme-final2026 .lt-sports-logo-img,
+body.theme-final2026 .sports-logo-img {
+  padding: 4px !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
+body.theme-final2026 .lt-sports-bar-top,
+body.theme-final2026 .team-lt-bar-top,
+body.theme-final2026 .sports-bar-top {
+  background: rgba(16, 21, 43, 0.88) !important;
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--neon-purple) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+body.theme-final2026 .lt-sports-bar-top::after,
+body.theme-final2026 .team-lt-bar-top::after,
+body.theme-final2026 .sports-bar-top::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 100%;
+  background-image: url('/src/sbc_assets/line-orange.png');
+  background-size: cover;
+  background-position: right center;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+body.theme-final2026 .lt-sports-bar-bottom,
+body.theme-final2026 .team-lt-bar-bottom,
+body.theme-final2026 .sports-bar-bottom {
+  background: rgba(11, 14, 39, 0.94) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--neon-cyan) !important;
+}
+
+body.theme-final2026 .lt-sports-logo-block,
+body.theme-final2026 .sports-logo-block,
+body.theme-final2026 .team-lt-logo-block {
+  background: rgba(16, 21, 43, 0.95) !important;
+  border-left: 2px solid var(--neon-cyan) !important;
+  box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.12) !important;
+}
+
+body.theme-final2026 .lt-sports-geo-top,
+body.theme-final2026 .sports-geo-top {
+  background: var(--maratona-gradient) !important;
+}
+
+body.theme-final2026 .lt-sports-geo-bottom,
+body.theme-final2026 .sports-geo-bottom {
+  background: var(--neon-cyan) !important;
+}
+
+body.theme-final2026 .lt-sports-name,
+body.theme-final2026 .team-lt-name,
+body.theme-final2026 .sports-title-text {
+  color: #ffffff !important;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.5) !important;
+  font-family: var(--font-anta) !important;
+  letter-spacing: 1.5px !important;
+}
+
+body.theme-final2026 .lt-sports-role,
+body.theme-final2026 .team-lt-members,
+body.theme-final2026 .sports-subtitle-text {
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-anta) !important;
+  letter-spacing: 1px !important;
 }
