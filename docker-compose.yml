@@ -1,0 +1,15 @@
+services:
+  broadcast-overlay:
+    build: .
+    container_name: broadcast-overlay
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CONTROL_USER=${CONTROL_USER:-admin}
+      - CONTROL_PASS=${CONTROL_PASS:-maratona}
+    volumes:
+      - ./data:/app/data
+
