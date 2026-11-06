@@ -729,12 +729,25 @@ function hideProblemStats() {
 // COMENTÁRIO DO CHAT
 // ============================================
 
-function showComment(author, message) {
+function showComment(author, message, avatarUrl) {
   resetOverlay(commentOverlay);
   commentOverlay.classList.remove('hiding');
 
   document.getElementById('comment-message').textContent = message || '';
   document.getElementById('comment-author').textContent = author || 'Anônimo';
+
+  const avatar = document.getElementById('comment-avatar');
+  const fallback = document.getElementById('comment-avatar-fallback');
+  avatar.onerror = () => { avatar.style.display = 'none'; fallback.style.display = ''; };
+  if (avatarUrl) {
+    avatar.src = avatarUrl;
+    avatar.style.display = '';
+    fallback.style.display = 'none';
+  } else {
+    avatar.removeAttribute('src');
+    avatar.style.display = 'none';
+    fallback.style.display = '';
+  }
 
   commentOverlay.classList.remove('hidden');
   commentOverlay.classList.add('active');
@@ -1042,7 +1055,7 @@ socket.on('state-init', (state) => {
   if (ov.medalTable) showMedalTable(ov.medalTable);
   if (ov.problemStats) showProblemStats(ov.problemStats);
   if (ov.ticker) showTicker(ov.ticker.text, ov.ticker.options);
-  if (ov.comment) showComment(ov.comment.author, ov.comment.message);
+  if (ov.comment) showComment(ov.comment.author, ov.comment.message, ov.comment.profileImageUrl);
 });
 
 socket.on('show-rankup', (data) => showRankUp(data.teamName, data.position));
@@ -1056,7 +1069,7 @@ socket.on('show-medal-table', (data) => showMedalTable(data));
 socket.on('hide-medal-table', () => hideMedalTable());
 socket.on('show-problem-stats', (data) => showProblemStats(data));
 socket.on('hide-problem-stats', () => hideProblemStats());
-socket.on('show-comment', (data) => showComment(data.author, data.message));
+socket.on('show-comment', (data) => showComment(data.author, data.message, data.profileImageUrl));
 socket.on('hide-comment', () => hideComment());
 socket.on('show-sports-lt', (data) => showSportsLT(data.options));
 socket.on('hide-sports-lt', () => hideSportsLT());

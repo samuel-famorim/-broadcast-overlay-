@@ -1065,6 +1065,7 @@ body {
 
 #comment-overlay .lt-sports-name { font-size: 26px; }
 #comment-overlay .lt-sports-role { font-size: 20px; font-weight: 800; }
+#comment-overlay .lt-sports-logo-img { object-fit: cover; padding: 0 !important; }
 
 @keyframes commentIn {
   from { left: -1200px; opacity: 0; }

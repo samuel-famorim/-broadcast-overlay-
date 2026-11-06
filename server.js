@@ -749,6 +749,7 @@ function startYTPolling(apiKey, liveChatId) {
           author: item.authorDetails.displayName,
           message: item.snippet.displayMessage,
           timestamp: new Date(item.snippet.publishedAt).toLocaleTimeString(),
+          profileImageUrl: item.authorDetails.profileImageUrl,
           isOwner: item.authorDetails.isChatOwner
         }));
 

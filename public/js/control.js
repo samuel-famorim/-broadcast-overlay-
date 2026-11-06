@@ -1397,13 +1397,13 @@ function getYTFavorites() {
   return Array.isArray(sharedState.ytFavorites) ? sharedState.ytFavorites : [];
 }
 
-function saveYTFavorite(author, message) {
+function saveYTFavorite(author, message, profileImageUrl) {
   const favs = [...getYTFavorites()];
   if (favs.find(f => f.message === message && f.author === author)) {
     toast('Já está nos favoritos!', 'error');
     return;
   }
-  favs.unshift({ author, message, time: new Date().toLocaleTimeString() });
+  favs.unshift({ author, message, time: new Date().toLocaleTimeString(), profileImageUrl });
   const trimmed = favs.slice(0, 30);
   sharedState.ytFavorites = trimmed;
   renderYTFavorites();
@@ -1419,10 +1419,10 @@ function clearYTFavorites() {
   toast('Favoritos limpos!', 'success');
 }
 
-function clickFavorite(author, message, el) {
+function clickFavorite(author, message, el, profileImageUrl) {
   document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
   if (el) el.classList.add('active');
-  socket.emit('trigger-show-comment', { author, message });
+  socket.emit('trigger-show-comment', { author, message, profileImageUrl });
   document.getElementById('comment-display-toggle').checked = true;
   setLiveIndicator('comment-display', true);
 }
@@ -1440,7 +1440,7 @@ function renderYTFavorites() {
   section.style.display = 'block';
 
   container.innerHTML = favs.map((f) => `
-    <div class="yt-msg fav-msg" style="border-color:rgba(255,215,0,0.15);" data-author="${escapeHtml(f.author).replace(/"/g,'&quot;')}" data-message="${escapeHtml(f.message).replace(/"/g,'&quot;')}">
+    <div class="yt-msg fav-msg" style="border-color:rgba(255,215,0,0.15);" data-author="${escapeHtml(f.author).replace(/"/g,'&quot;')}" data-message="${escapeHtml(f.message).replace(/"/g,'&quot;')}" data-avatar="${escapeHtml(f.profileImageUrl || '').replace(/"/g,'&quot;')}">
       <div class="yt-msg-header">
         <strong style="color:#FFD700;">⭐ ${escapeHtml(f.author)}</strong>
         <small>${escapeHtml(f.time)}</small>
@@ -1453,7 +1453,7 @@ function renderYTFavorites() {
     el.onclick = () => {
       const author = el.dataset.author;
       const message = el.dataset.message;
-      clickFavorite(author, message, el);
+      clickFavorite(author, message, el, el.dataset.avatar);
     };
   });
 }
@@ -1546,7 +1546,7 @@ socket.on('yt-chat-messages', (messages) => {
     favBtn.title = 'Salvar favorito';
     favBtn.onclick = (e) => {
       e.stopPropagation();
-      saveYTFavorite(msg.author, msg.message);
+      saveYTFavorite(msg.author, msg.message, msg.profileImageUrl);
     };
     actions.appendChild(favBtn);
 
@@ -1558,7 +1558,7 @@ socket.on('yt-chat-messages', (messages) => {
       document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
       div.classList.add('active');
       activeCommentId = msg.id;
-      socket.emit('trigger-show-comment', { author: msg.author, message: msg.message, id: msg.id });
+      socket.emit('trigger-show-comment', { author: msg.author, message: msg.message, id: msg.id, profileImageUrl: msg.profileImageUrl });
       document.getElementById('comment-display-toggle').checked = true;
       setLiveIndicator('comment-display', true);
     };
