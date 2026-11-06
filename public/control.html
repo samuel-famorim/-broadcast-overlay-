@@ -426,26 +426,43 @@
               </label>
             </div>
 
-            <details class="lt-colors-details" open>
-              <summary>Cores</summary>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Título do Banner</label>
+                <input type="text" id="sponsors-title" value="NOSSOS PATROCINADORES" placeholder="NOSSOS PATROCINADORES">
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label>Velocidade do Carrossel (<span id="sponsors-speed-val">35s</span>)</label>
+                <input type="range" id="sponsors-speed" min="15" max="75" value="35" oninput="document.getElementById('sponsors-speed-val').textContent = this.value + 's'">
+              </div>
+            </div>
+
+            <div class="toggle-row" style="margin-top: 8px;">
+              <span class="toggle-label">Logos em Branco (Estilo TV / CazéTV)</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="sponsors-monochrome" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <details class="lt-colors-details" style="margin-top: 10px;">
+              <summary>🎨 Cores e Estilo do Banner</summary>
               <div class="input-row input-row-2" style="margin-top:8px;">
-                <div class="input-group"><label>Cor Lateral Esquerda</label><input type="color" id="sponsors-left-bg" value="#FF1493"></div>
-                <div class="input-group"><label>Cor Lateral Direita</label><input type="color" id="sponsors-right-bg" value="#00BFFF"></div>
-              </div>
-              <div class="input-row input-row-2">
-                <div class="input-group"><label>Detalhe Esq 1</label><input type="color" id="sponsors-geo-l1" value="#FF1493"></div>
-                <div class="input-group"><label>Detalhe Esq 2</label><input type="color" id="sponsors-geo-l2" value="#FFD700"></div>
-              </div>
-              <div class="input-row input-row-2">
-                <div class="input-group"><label>Detalhe Dir 1</label><input type="color" id="sponsors-geo-r1" value="#00BFFF"></div>
-                <div class="input-group"><label>Detalhe Dir 2</label><input type="color" id="sponsors-geo-r2" value="#00FF88"></div>
+                <div class="input-group"><label>Azul Superior (Destaque)</label><input type="color" id="sponsors-color-top" value="#152261"></div>
+                <div class="input-group"><label>Azul Inferior (Profundo)</label><input type="color" id="sponsors-color-bot" value="#050824"></div>
               </div>
               <div class="input-row">
-                <div class="input-group"><label>Fundo Conteúdo</label><input type="color" id="sponsors-content-bg" value="#FFFFFF"></div>
+                <div class="input-group"><label>Cor do Título</label><input type="color" id="sponsors-color-title" value="#a5b9f4"></div>
               </div>
             </details>
 
-            <button class="btn btn-sports" onclick="triggerSponsorsLT()">🤝 Exibir Sponsors</button>
+            <div class="btn-group" style="display:flex; gap:10px; margin-top:14px;">
+              <button class="btn btn-sports" style="flex:1" onclick="triggerSponsorsLT()">🤝 Exibir Carrossel</button>
+              <button class="btn btn-danger" style="flex:1" onclick="hideSponsorsLTControl()">⏹ Ocultar</button>
+            </div>
           </div>
         </section>
 

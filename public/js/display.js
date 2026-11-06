@@ -909,21 +909,37 @@ function showSponsorsLT(options) {
   options = options || {};
   resetOverlay(sponsorsLt);
 
-  const leftBg = options.leftBg || 'linear-gradient(135deg, #FF1493, #FF6B6B, #FFD700)';
-  const rightBg = options.rightBg || 'linear-gradient(225deg, #00BFFF, #4ECDC4, #00FF88)';
-  const leftGeo1 = options.leftGeo1 || '#FF1493';
-  const leftGeo2 = options.leftGeo2 || '#FFD700';
-  const rightGeo1 = options.rightGeo1 || '#00BFFF';
-  const rightGeo2 = options.rightGeo2 || '#00FF88';
-  const contentBg = options.contentBg || '#FFFFFF';
+  const title = options.title || 'NOSSOS PATROCINADORES';
+  const speed = parseInt(options.speed, 10) || 35;
+  const monochrome = options.monochrome !== false; // default true
+  const topColor = options.colorTop || '#152261';
+  const botColor = options.colorBot || '#050824';
+  const titleColor = options.colorTitle || '#a5b9f4';
 
-  sponsorsLt.querySelector('.sponsors-accent-left').style.background = leftBg;
-  sponsorsLt.querySelector('.sponsors-accent-right').style.background = rightBg;
-  sponsorsLt.querySelector('.sponsors-geo-left-top').style.background = leftGeo1;
-  sponsorsLt.querySelector('.sponsors-geo-left-bottom').style.background = leftGeo2;
-  sponsorsLt.querySelector('.sponsors-geo-right-top').style.background = rightGeo1;
-  sponsorsLt.querySelector('.sponsors-geo-right-bottom').style.background = rightGeo2;
-  sponsorsLt.querySelector('.sponsors-content').style.background = contentBg;
+  const titleEl = document.getElementById('sponsors-title-text');
+  if (titleEl) {
+    titleEl.textContent = title;
+    titleEl.style.color = titleColor;
+  }
+
+  const bannerEl = sponsorsLt.querySelector('.sponsors-banner');
+  if (bannerEl) {
+    bannerEl.style.background = `radial-gradient(ellipse at 50% 0%, ${topColor} 0%, #0c1445 45%, ${botColor} 100%)`;
+  }
+
+  const trackEl = document.getElementById('sponsors-track');
+  if (trackEl) {
+    trackEl.style.setProperty('--sponsors-speed', `${speed}s`);
+  }
+
+  const logos = sponsorsLt.querySelectorAll('.sponsors-logo');
+  logos.forEach(logo => {
+    if (monochrome) {
+      logo.classList.remove('original-colors');
+    } else {
+      logo.classList.add('original-colors');
+    }
+  });
 
   sponsorsLt.classList.remove('hidden', 'hiding');
   sponsorsLt.classList.add('active');

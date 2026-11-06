@@ -61,6 +61,7 @@ const SYNCED_INPUT_IDS = [
   'sports-top-text', 'sports-bottom-text', 'sports-geo1', 'sports-geo2', 'sports-logo-url',
   'sponsors-left-bg', 'sponsors-right-bg', 'sponsors-geo-l1', 'sponsors-geo-l2',
   'sponsors-geo-r1', 'sponsors-geo-r2', 'sponsors-content-bg',
+  'sponsors-title', 'sponsors-speed', 'sponsors-color-top', 'sponsors-color-bot', 'sponsors-color-title',
   'ticker-text', 'ticker-color', 'ticker-bg', 'ticker-speed',
   'prob-problem-select', 'prob-acs-input',
   'firstac-problem-select', 'firstac-team', 'firstac-university',
@@ -768,38 +769,39 @@ function toggleTeamLT(active) {
 }
 
 // ============================================
-// SPONSORS BAR
+// SPONSORS CAROUSEL BANNER
 // ============================================
 
 function triggerSponsorsLT() {
-  const leftColor = document.getElementById('sponsors-left-bg').value;
-  const rightColor = document.getElementById('sponsors-right-bg').value;
   const options = {
-    leftBg: `linear-gradient(135deg, ${leftColor}, ${lightenColor(leftColor, 20)}, ${lightenColor(leftColor, 40)})`,
-    rightBg: `linear-gradient(225deg, ${rightColor}, ${lightenColor(rightColor, 20)}, ${lightenColor(rightColor, 40)})`,
-    leftGeo1: document.getElementById('sponsors-geo-l1').value,
-    leftGeo2: document.getElementById('sponsors-geo-l2').value,
-    rightGeo1: document.getElementById('sponsors-geo-r1').value,
-    rightGeo2: document.getElementById('sponsors-geo-r2').value,
-    contentBg: document.getElementById('sponsors-content-bg').value
+    title: document.getElementById('sponsors-title')?.value || 'NOSSOS PATROCINADORES',
+    speed: parseInt(document.getElementById('sponsors-speed')?.value, 10) || 35,
+    monochrome: document.getElementById('sponsors-monochrome')?.checked !== false,
+    colorTop: document.getElementById('sponsors-color-top')?.value || '#152261',
+    colorBot: document.getElementById('sponsors-color-bot')?.value || '#050824',
+    colorTitle: document.getElementById('sponsors-color-title')?.value || '#a5b9f4'
   };
   socket.emit('trigger-sponsors-lt', options);
-  document.getElementById('sponsors-lt-toggle').checked = true;
+  const toggle = document.getElementById('sponsors-lt-toggle');
+  if (toggle) toggle.checked = true;
   setLiveIndicator('sponsors-lt', true);
-  toast('🤝 Sponsors!', 'success');
+  toast('🤝 Carrossel de Patrocinadores ativo!', 'success');
 }
 
-function lightenColor(hex, percent) {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const r = Math.min(255, (num >> 16) + Math.round(2.55 * percent));
-  const g = Math.min(255, ((num >> 8) & 0x00FF) + Math.round(2.55 * percent));
-  const b = Math.min(255, (num & 0x0000FF) + Math.round(2.55 * percent));
-  return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
+function hideSponsorsLTControl() {
+  socket.emit('trigger-sponsors-lt-hide');
+  const toggle = document.getElementById('sponsors-lt-toggle');
+  if (toggle) toggle.checked = false;
+  setLiveIndicator('sponsors-lt', false);
+  toast('Patrocinadores ocultados', 'success');
 }
 
 function toggleSponsorsLT(active) {
-  if (active) { triggerSponsorsLT(); }
-  else { socket.emit('trigger-sponsors-lt-hide'); setLiveIndicator('sponsors-lt', false); toast('Sponsors removido', 'success'); }
+  if (active) {
+    triggerSponsorsLT();
+  } else {
+    hideSponsorsLTControl();
+  }
 }
 
 // ============================================
