@@ -92,10 +92,25 @@ function getDefaultPresets(type) {
     logoUrl: '/src/sbc_assets/sabia-voando.png'
   };
 
+  const ufuColors = {
+    topBg: '#152069',
+    bottomBg: '#0c0b4d',
+    logoBg: '#10113c',
+    nameColor: '#ffffff',
+    roleColor: '#00e5ff',
+    membersColor: '#00e5ff',
+    topText: '#ffffff',
+    bottomText: '#ff6a00',
+    geo1: '#ff6a00',
+    geo2: '#9d00ff',
+    logoUrl: '/src/sbc_assets/sabia-voando.png'
+  };
+
   if (type === 'globalcolors') {
     return [
       { label: 'Maratona Padrão', colors: { ...padraoColors } },
-      { label: 'Maratona Final 2026', colors: { ...finalColors } }
+      { label: 'Maratona Final 2026', colors: { ...finalColors } },
+      { label: 'Maratona Final 2026 - FACOM UFU', colors: { ...ufuColors } }
     ];
   }
   if (type === 'pessoas') {
@@ -115,6 +130,14 @@ function getDefaultPresets(type) {
         rightName: 'NOME DA PESSOA',
         rightRole: 'CARGO / FUNÇÃO',
         colors: { ...finalColors }
+      },
+      {
+        label: 'Maratona Final 2026 - FACOM UFU',
+        leftName: 'NOME DA PESSOA',
+        leftRole: 'FACOM / UFU',
+        rightName: 'NOME DA PESSOA',
+        rightRole: 'CARGO / FUNÇÃO',
+        colors: { ...ufuColors }
       }
     ];
   }
@@ -135,6 +158,14 @@ function getDefaultPresets(type) {
         m2: 'COMPETIDOR 2',
         m3: 'COMPETIDOR 3',
         colors: { ...finalColors }
+      },
+      {
+        label: 'Maratona Final 2026 - FACOM UFU',
+        teamName: 'NOME DO TIME FINALISTA',
+        m1: 'COMPETIDOR 1',
+        m2: 'COMPETIDOR 2',
+        m3: 'COMPETIDOR 3',
+        colors: { ...ufuColors }
       }
     ];
   }
@@ -151,6 +182,12 @@ function getDefaultPresets(type) {
         titleText: 'FINAL BRASILEIRA 2026',
         subtitleText: 'UBERLÂNDIA/MG',
         colors: { ...finalColors }
+      },
+      {
+        label: 'Maratona Final 2026 - FACOM UFU',
+        titleText: '31ª MARATONA SBC DE PROGRAMAÇÃO',
+        subtitleText: 'FACOM • UFU • UBERLÂNDIA/MG',
+        colors: { ...ufuColors }
       }
     ];
   }
@@ -269,11 +306,23 @@ function loadStateFromDisk() {
       const raw = fs.readFileSync(STATE_FILE, 'utf8');
       const parsed = JSON.parse(raw);
       const def = createDefaultState();
+      const presets = { ...def.presets, ...(parsed.presets || {}) };
+      // Garante que presets padrão estejam presentes se ainda não existirem no estado salvo
+      ['pessoas', 'time', 'barra', 'globalcolors'].forEach(type => {
+        const defArr = def.presets[type] || [];
+        const existing = Array.isArray(presets[type]) ? [...presets[type]] : [];
+        defArr.forEach(dp => {
+          if (!existing.some(ep => ep.label === dp.label)) {
+            existing.push(dp);
+          }
+        });
+        presets[type] = existing;
+      });
       return {
         ...def,
         ...parsed,
         settings: { ...def.settings, ...(parsed.settings || {}) },
-        presets: { ...def.presets, ...(parsed.presets || {}) },
+        presets,
         inputs: { ...def.inputs, ...(parsed.inputs || {}) },
         activeOverlays: { ...def.activeOverlays, ...(parsed.activeOverlays || {}) }
       };

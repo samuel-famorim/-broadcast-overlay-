@@ -3,6 +3,8 @@ const urlParamsDisplay = new URLSearchParams(window.location.search);
 const themeDisplay = urlParamsDisplay.get('theme');
 if (themeDisplay === 'final2026') {
   document.body.classList.add('theme-final2026');
+} else if (themeDisplay === 'ufu2026' || themeDisplay === 'ufu') {
+  document.body.classList.add('theme-ufu2026');
 }
 
 /* ============================================
@@ -269,15 +271,15 @@ function showLowerThird(side, name, role, options) {
     : '/src/sbc_assets/sabia-voando.png';
 
   // Bloco logo
-  el.querySelector('.lt-sports-logo-block').style.background = logoBgColor;
-  el.querySelector('.lt-sports-geo-top').style.background = geoColor1;
-  el.querySelector('.lt-sports-geo-bottom').style.background = geoColor2;
+  el.querySelector('.lt-sports-logo-block').style.setProperty('background', logoBgColor, 'important');
+  el.querySelector('.lt-sports-geo-top').style.setProperty('background', geoColor1, 'important');
+  el.querySelector('.lt-sports-geo-bottom').style.setProperty('background', geoColor2, 'important');
 
   // Barras de texto
-  el.querySelector('.lt-sports-bar-top').style.background = topBgColor;
-  el.querySelector('.lt-sports-bar-bottom').style.background = bottomBgColor;
-  el.querySelector('.lt-sports-name').style.color = nameColor;
-  el.querySelector('.lt-sports-role').style.color = roleColor;
+  el.querySelector('.lt-sports-bar-top').style.setProperty('background', topBgColor, 'important');
+  el.querySelector('.lt-sports-bar-bottom').style.setProperty('background', bottomBgColor, 'important');
+  el.querySelector('.lt-sports-name').style.setProperty('color', nameColor, 'important');
+  el.querySelector('.lt-sports-role').style.setProperty('color', roleColor, 'important');
 
   // Textos
   el.querySelector('.lt-sports-name').textContent = name;
@@ -808,13 +810,13 @@ function showSportsLT(options) {
     ? options.logoUrl
     : '/src/sbc_assets/sabia-voando.png';
 
-  sportsLt.querySelector('.sports-logo-block').style.background = logoBgColor;
-  sportsLt.querySelector('.sports-bar-top').style.background = topBgColor;
-  sportsLt.querySelector('.sports-bar-bottom').style.background = bottomBgColor;
-  sportsLt.querySelector('.sports-title-text').style.color = topTextColor;
-  sportsLt.querySelector('.sports-subtitle-text').style.color = bottomTextColor;
-  sportsLt.querySelector('.sports-geo-top').style.background = geoColor1;
-  sportsLt.querySelector('.sports-geo-bottom').style.background = geoColor2;
+  sportsLt.querySelector('.sports-logo-block').style.setProperty('background', logoBgColor, 'important');
+  sportsLt.querySelector('.sports-bar-top').style.setProperty('background', topBgColor, 'important');
+  sportsLt.querySelector('.sports-bar-bottom').style.setProperty('background', bottomBgColor, 'important');
+  sportsLt.querySelector('.sports-title-text').style.setProperty('color', topTextColor, 'important');
+  sportsLt.querySelector('.sports-subtitle-text').style.setProperty('color', bottomTextColor, 'important');
+  sportsLt.querySelector('.sports-geo-top').style.setProperty('background', geoColor1, 'important');
+  sportsLt.querySelector('.sports-geo-bottom').style.setProperty('background', geoColor2, 'important');
 
   sportsLt.querySelector('.sports-title-text').textContent = titleText;
   sportsLt.querySelector('.sports-subtitle-text').textContent = subtitleText;
@@ -861,18 +863,18 @@ function showTeamLT(teamName, member1, member2, member3, options) {
     : '/src/sbc_assets/sabia-voando.png';
 
   // Cores
-  teamLt.querySelector('.team-lt-logo-block').style.background = logoBgColor;
-  teamLt.querySelector('.team-lt-bar-top').style.background = topBgColor;
-  teamLt.querySelector('.team-lt-bar-bottom').style.background = bottomBgColor;
+  teamLt.querySelector('.team-lt-logo-block').style.setProperty('background', logoBgColor, 'important');
+  teamLt.querySelector('.team-lt-bar-top').style.setProperty('background', topBgColor, 'important');
+  teamLt.querySelector('.team-lt-bar-bottom').style.setProperty('background', bottomBgColor, 'important');
   teamLt.querySelector('.team-lt-name').style.setProperty('--name-color', nameColor);
-  teamLt.querySelector('.team-lt-name').style.color = nameColor;
+  teamLt.querySelector('.team-lt-name').style.setProperty('color', nameColor, 'important');
   teamLt.querySelector('.team-lt-members').style.setProperty('--role-color', membersColor);
-  teamLt.querySelector('.team-lt-members').style.color = membersColor;
+  teamLt.querySelector('.team-lt-members').style.setProperty('color', membersColor, 'important');
 
   const geoTop = teamLt.querySelector('.team-lt-logo-block .lt-sports-geo-top');
   const geoBottom = teamLt.querySelector('.team-lt-logo-block .lt-sports-geo-bottom');
-  if (geoTop) geoTop.style.background = geoColor1;
-  if (geoBottom) geoBottom.style.background = geoColor2;
+  if (geoTop) geoTop.style.setProperty('background', geoColor1, 'important');
+  if (geoBottom) geoBottom.style.setProperty('background', geoColor2, 'important');
 
   // Logo
   const logoImg = teamLt.querySelector('.lt-sports-logo-img');
@@ -986,6 +988,7 @@ socket.on('settings-updated', (data) => {
   if (data.activeTheme) {
     document.body.className = '';
     if (data.activeTheme === 'final2026') document.body.classList.add('theme-final2026');
+    if (data.activeTheme === 'ufu2026' || data.activeTheme === 'ufu') document.body.classList.add('theme-ufu2026');
   }
   if (data.marathonName) {
     marathonName = data.marathonName;
@@ -1003,6 +1006,7 @@ socket.on('state-init', (state) => {
     if (state.settings.activeTheme && !themeDisplay) {
       document.body.className = '';
       if (state.settings.activeTheme === 'final2026') document.body.classList.add('theme-final2026');
+      if (state.settings.activeTheme === 'ufu2026' || state.settings.activeTheme === 'ufu') document.body.classList.add('theme-ufu2026');
     }
     if (state.settings.marathonName) {
       marathonName = state.settings.marathonName;

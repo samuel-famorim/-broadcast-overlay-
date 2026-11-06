@@ -214,11 +214,15 @@ socket.on('state-init', (serverState) => {
     initialThemeHandled = true;
     const urlParams = new URLSearchParams(window.location.search);
     const themeParam = urlParams.get('theme');
-    if (themeParam === 'final2026' || themeParam === 'padrao') {
-      const targetLabel = themeParam === 'final2026' ? 'Maratona Final 2026' : 'Maratona Padrão';
-      if (sharedState.settings.activeTheme !== themeParam) {
-        sharedState.settings.activeTheme = themeParam;
-        socket.emit('update-settings', { activeTheme: themeParam });
+    if (themeParam === 'final2026' || themeParam === 'padrao' || themeParam === 'ufu2026' || themeParam === 'ufu') {
+      let targetLabel = 'Maratona Padrão';
+      if (themeParam === 'final2026') targetLabel = 'Maratona Final 2026';
+      if (themeParam === 'ufu2026' || themeParam === 'ufu') targetLabel = 'Maratona Final 2026 - FACOM UFU';
+
+      const themeValue = (themeParam === 'ufu' || themeParam === 'ufu2026') ? 'ufu2026' : themeParam;
+      if (sharedState.settings.activeTheme !== themeValue) {
+        sharedState.settings.activeTheme = themeValue;
+        socket.emit('update-settings', { activeTheme: themeValue });
       }
       ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
         const presets = getPresets(type);

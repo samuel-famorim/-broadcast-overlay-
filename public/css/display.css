@@ -2114,3 +2114,90 @@ body.theme-final2026 .sports-subtitle-text {
   font-family: var(--font-anta) !important;
   letter-spacing: 1px !important;
 }
+
+/* ============================================
+   THEME OVERRIDES: FACOM UFU 2026
+   Estética oficial maratonasbc.facom.ufu.br
+   ============================================ */
+
+body.theme-ufu2026 .lt-sports-logo-circle,
+body.theme-ufu2026 .sports-logo-circle {
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.22) 0%, rgba(21, 32, 105, 0.95) 100%) !important;
+  border: 2px solid rgba(0, 229, 255, 0.6) !important;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.35) !important;
+}
+
+body.theme-ufu2026 .lt-sports-logo-img,
+body.theme-ufu2026 .sports-logo-img {
+  padding: 4px !important;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
+body.theme-ufu2026 .lt-sports-bar-top,
+body.theme-ufu2026 .team-lt-bar-top,
+body.theme-ufu2026 .sports-bar-top {
+  background: rgba(21, 32, 105, 0.92) !important; /* #152069 from UFU site */
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--neon-cyan) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+body.theme-ufu2026 .lt-sports-bar-top::after,
+body.theme-ufu2026 .team-lt-bar-top::after,
+body.theme-ufu2026 .sports-bar-top::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 100%;
+  background-image: url('/src/sbc_assets/line-orange.png');
+  background-size: cover;
+  background-position: right center;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+body.theme-ufu2026 .lt-sports-bar-bottom,
+body.theme-ufu2026 .team-lt-bar-bottom,
+body.theme-ufu2026 .sports-bar-bottom {
+  background: rgba(12, 11, 77, 0.96) !important; /* #0c0b4d from UFU site */
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--neon-orange) !important; /* #ff6a00 accent line */
+}
+
+body.theme-ufu2026 .lt-sports-logo-block,
+body.theme-ufu2026 .sports-logo-block,
+body.theme-ufu2026 .team-lt-logo-block {
+  background: rgba(16, 17, 60, 0.96) !important; /* #10113c from UFU site card base */
+  border-left: 2px solid var(--neon-cyan) !important;
+  box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.15) !important;
+}
+
+body.theme-ufu2026 .lt-sports-geo-top,
+body.theme-ufu2026 .sports-geo-top {
+  background: linear-gradient(135deg, #00e5ff 0%, #2962ff 33%, #9d00ff 66%, #ff6a00 100%) !important;
+}
+
+body.theme-ufu2026 .lt-sports-geo-bottom,
+body.theme-ufu2026 .sports-geo-bottom {
+  background: var(--neon-orange) !important;
+}
+
+body.theme-ufu2026 .lt-sports-name,
+body.theme-ufu2026 .team-lt-name,
+body.theme-ufu2026 .sports-title-text {
+  color: #ffffff !important;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.5) !important;
+  font-family: var(--font-anta) !important;
+  letter-spacing: 1.5px !important;
+}
+
+body.theme-ufu2026 .lt-sports-role,
+body.theme-ufu2026 .team-lt-members,
+body.theme-ufu2026 .sports-subtitle-text {
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-anta) !important;
+  letter-spacing: 1px !important;
+}

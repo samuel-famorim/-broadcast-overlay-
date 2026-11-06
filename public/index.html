@@ -137,6 +137,11 @@
 
     .badge-padrao { background: rgba(41, 98, 255, 0.2); color: var(--neon-blue); border: 1px solid rgba(41, 98, 255, 0.4); }
     .badge-final { background: rgba(157, 0, 255, 0.2); color: #d896ff; border: 1px solid rgba(157, 0, 255, 0.4); }
+    .badge-ufu { background: rgba(0, 229, 255, 0.2); color: var(--neon-cyan); border: 1px solid rgba(0, 229, 255, 0.4); }
+
+    .project-card.ufu2026::before {
+      background: linear-gradient(90deg, #00e5ff, #2962ff, #9d00ff, #ff6a00);
+    }
 
     .actions-row {
       display: flex;
@@ -214,6 +219,19 @@
         <div class="actions-row">
           <a href="/control?theme=final2026" class="btn-action btn-control" onclick="event.stopPropagation();">Painel (Control)</a>
           <a href="/display?theme=final2026" class="btn-action btn-display" target="_blank" onclick="event.stopPropagation();">Overlay (OBS)</a>
+        </div>
+      </div>
+
+      <!-- Card FACOM UFU 2026 -->
+      <div class="project-card ufu2026" onclick="window.location.href='/control?theme=ufu2026'">
+        <img src="/src/sbc_assets/facom.png" alt="FACOM UFU 2026" class="card-icon">
+        <h2 class="card-title">Maratona FACOM UFU</h2>
+        <p class="card-desc">Estética oficial do portal FACOM/UFU: fundo azul profundo (#152069/#0c0b4d), tipografia em branco puro e detalhes em ciano e laranja neon.</p>
+        <div style="margin-bottom: 20px;"><span class="card-badge badge-ufu">Edição UFU 2026</span></div>
+        
+        <div class="actions-row">
+          <a href="/control?theme=ufu2026" class="btn-action btn-control" onclick="event.stopPropagation();">Painel (Control)</a>
+          <a href="/display?theme=ufu2026" class="btn-action btn-display" target="_blank" onclick="event.stopPropagation();">Overlay (OBS)</a>
         </div>
       </div>
 
