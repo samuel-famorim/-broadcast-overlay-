@@ -308,17 +308,13 @@ function hideLowerThird(side) {
 }
 
 // ============================================
-// TICKER / LETREIRO ROTATIVO (independente)
+// TICKER / LETREIRO ROTATIVO (customizável)
 // ============================================
 
-function showTicker(text) {
-  tickerBar.classList.remove('hidden');
-  tickerBar.querySelector('.ticker-text').textContent =
-    text + '  •  ' + text + '  •  ' + text + '  •  ' + text + '  •  ';
-}
-
-function hideTicker() {
-  tickerBar.classList.add('hidden');
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
 }
 
 // ============================================
@@ -606,14 +602,14 @@ function showScoreboard(data) {
       row.className = 'scoreboard-row';
       row.innerHTML = `
         <span>
-          <strong>${entry.team}</strong>
-          ${entry.university ? '<small style="color:rgba(255,255,255,0.4);font-size:14px;">' + entry.university + '</small>' : ''}
+          <strong>${escapeHtml(entry.team)}</strong>
+          ${entry.university ? '<small style="color:rgba(255,255,255,0.4);font-size:14px;">' + escapeHtml(entry.university) + '</small>' : ''}
         </span>
         <span class="scoreboard-problem">
           <span class="scoreboard-balloon">🎈</span>
-          ${entry.problem}
+          ${escapeHtml(entry.problem)}
         </span>
-        <span class="scoreboard-time">${entry.time || ''}</span>
+        <span class="scoreboard-time">${escapeHtml(entry.time || '')}</span>
       `;
       rows.appendChild(row);
     });
@@ -661,7 +657,7 @@ function showMedalTable(data) {
       const div = document.createElement('div');
       div.className = 'medaltable-row';
       div.innerHTML = `
-        <span>${i+1}. ${row.name}</span>
+        <span>${i+1}. ${escapeHtml(row.name)}</span>
         <span class="medaltable-gold">${row.gold||0}</span>
         <span class="medaltable-silver">${row.silver||0}</span>
         <span class="medaltable-bronze">${row.bronze||0}</span>
@@ -699,14 +695,14 @@ function showProblemStats(data) {
     rows.innerHTML = '<div class="medaltable-row"><span>-</span><span>Nenhum dado</span><span>-</span><span>-</span></div>';
   } else {
     data.rows.forEach(row => {
-      const badgeClass = row.badge || 'normal';
+      const badgeClass = escapeHtml(row.badge || 'normal');
       const badgeText = row.badge === 'balloon-plus' ? 'BALÃO ++' : row.badge === 'hard' ? 'HARD' : '—';
       const div = document.createElement('div');
       div.className = 'medaltable-row';
       div.style.gridTemplateColumns = '100px 1fr 100px 140px';
       div.innerHTML = `
-        <span style="font-weight:900;color:${row.color || '#FFD700'};">${row.letter}</span>
-        <span>${row.name || ''}</span>
+        <span style="font-weight:900;color:${escapeHtml(row.color || '#FFD700')};">${escapeHtml(row.letter)}</span>
+        <span>${escapeHtml(row.name || '')}</span>
         <span class="problemstats-acs">${row.acs || 0}</span>
         <span><span class="problemstats-badge ${badgeClass}">${badgeText}</span></span>
       `;
@@ -998,6 +994,35 @@ socket.on('settings-updated', (data) => {
     const subtitle = document.querySelector('#contest-start .event-subtitle');
     if (subtitle) subtitle.textContent = marathonName;
   }
+});
+
+// Restaura overlays persistentes ao abrir/atualizar o display
+socket.on('state-init', (state) => {
+  if (!state) return;
+  if (state.settings) {
+    if (state.settings.activeTheme && !themeDisplay) {
+      document.body.className = '';
+      if (state.settings.activeTheme === 'final2026') document.body.classList.add('theme-final2026');
+    }
+    if (state.settings.marathonName) {
+      marathonName = state.settings.marathonName;
+      document.querySelectorAll('.medal-subtitle').forEach(el => el.textContent = marathonName);
+      const subtitle = document.querySelector('#contest-start .event-subtitle');
+      if (subtitle) subtitle.textContent = marathonName;
+    }
+  }
+  const ov = state.activeOverlays || {};
+  if (ov.ltLeft) showLowerThird('left', ov.ltLeft.name, ov.ltLeft.role, ov.ltLeft.options);
+  if (ov.ltRight) showLowerThird('right', ov.ltRight.name, ov.ltRight.role, ov.ltRight.options);
+  if (ov.teamLt) showTeamLT(ov.teamLt.teamName, ov.teamLt.m1, ov.teamLt.m2, ov.teamLt.m3, ov.teamLt.options);
+  if (ov.sportsLt) showSportsLT(ov.sportsLt.options);
+  if (ov.sponsorsLt) showSponsorsLT(ov.sponsorsLt);
+  if (ov.problemLt) showProblemLT(ov.problemLt.letter, ov.problemLt.name, ov.problemLt.acs);
+  if (ov.scoreboard) showScoreboard(ov.scoreboard);
+  if (ov.medalTable) showMedalTable(ov.medalTable);
+  if (ov.problemStats) showProblemStats(ov.problemStats);
+  if (ov.ticker) showTicker(ov.ticker.text, ov.ticker.options);
+  if (ov.comment) showComment(ov.comment.author, ov.comment.message);
 });
 
 socket.on('show-rankup', (data) => showRankUp(data.teamName, data.position));

@@ -1,44 +1,171 @@
 /* ============================================
-   PAINEL DE CONTROLE v3.0 - Tabs + Presets
+   PAINEL DE CONTROLE v3.1 - Persistência Centralizada (Real-Time)
    Maratona SBC de Programação
    ============================================ */
 
 const socket = io();
 let selectedColor = '#FF3366';
 let activeLiveToggles = {};
+let isApplyingRemoteState = false;
+let initialThemeHandled = false;
+
+const DEFAULT_PROBLEM_COLORS = [
+  '#FF3366', '#00BFFF', '#FFD700', '#00FF88', '#FF6B35', '#7B68EE',
+  '#FF69B4', '#E0E0E0', '#4169E1', '#CD853F', '#00CED1', '#ADFF2F'
+];
+
+// Estado compartilhado sincronizado com o servidor
+let sharedState = {
+  settings: {
+    marathonName: 'Maratona SBC de Programação',
+    activeTheme: 'final2026'
+  },
+  presets: {
+    pessoas: [],
+    time: [],
+    barra: [],
+    medaltable: [],
+    problemstats: [],
+    globalcolors: []
+  },
+  problems: 'ABCDEFGHIJKL'.split('').map((l, i) => ({
+    letter: l,
+    name: '',
+    color: DEFAULT_PROBLEM_COLORS[i]
+  })),
+  firstAcEntries: [],
+  medalTable: [],
+  problemStats: [],
+  ytConfig: { apiKey: '', liveChatId: '' },
+  ytFavorites: [],
+  inputs: {},
+  activeOverlays: {}
+};
+
+// ============================================
+// SINCRONIZAÇÃO DE FORMULÁRIO E ESTADO
+// ============================================
+
+const SYNCED_INPUT_IDS = [
+  'global-marathon-name',
+  'global-top-bg', 'global-bottom-bg', 'global-logo-bg',
+  'global-name-color', 'global-role-color', 'global-geo1', 'global-geo2', 'global-logo-url',
+  'lt-left-name', 'lt-left-role', 'lt-right-name', 'lt-right-role',
+  'lt-top-bg', 'lt-bottom-bg', 'lt-logo-bg', 'lt-name-color', 'lt-role-color',
+  'lt-geo1', 'lt-geo2', 'lt-logo-url',
+  'team-lt-name', 'team-lt-m1', 'team-lt-m2', 'team-lt-m3',
+  'team-lt-top-bg', 'team-lt-bottom-bg', 'team-lt-logo-bg',
+  'team-lt-name-color', 'team-lt-members-color', 'team-lt-logo',
+  'sports-title', 'sports-subtitle',
+  'sports-top-bg', 'sports-bottom-bg', 'sports-logo-bg',
+  'sports-top-text', 'sports-bottom-text', 'sports-geo1', 'sports-geo2', 'sports-logo-url',
+  'sponsors-left-bg', 'sponsors-right-bg', 'sponsors-geo-l1', 'sponsors-geo-l2',
+  'sponsors-geo-r1', 'sponsors-geo-r2', 'sponsors-content-bg',
+  'ticker-text', 'ticker-color', 'ticker-bg', 'ticker-speed',
+  'prob-problem-select', 'prob-acs-input',
+  'firstac-problem-select', 'firstac-team', 'firstac-university',
+  'medal-team', 'medal-type', 'medal-position',
+  'balloon-team', 'rankup-team', 'rankup-position',
+  'alert-message', 'countdown-from'
+];
+
+function bindSyncedInputs() {
+  SYNCED_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const handler = () => {
+      if (isApplyingRemoteState) return;
+      sharedState.inputs[id] = el.value;
+      socket.emit('input-change', { id, value: el.value });
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+}
+
+function applyInputsFromState(inputsMap) {
+  if (!inputsMap) return;
+  isApplyingRemoteState = true;
+  Object.entries(inputsMap).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && document.activeElement !== el && val !== undefined) {
+      el.value = val;
+    }
+  });
+  isApplyingRemoteState = false;
+}
+
+function syncActiveOverlaysUI(overlays) {
+  if (!overlays) return;
+  sharedState.activeOverlays = overlays;
+
+  const setToggleState = (checkboxId, liveId, isActive) => {
+    const cb = document.getElementById(checkboxId);
+    if (cb) cb.checked = !!isActive;
+    setLiveIndicator(liveId, !!isActive);
+  };
+
+  setToggleState('lt-left-toggle', 'lt-left', !!overlays.ltLeft);
+  setToggleState('lt-right-toggle', 'lt-right', !!overlays.ltRight);
+  setToggleState('team-lt-toggle', 'team-lt', !!overlays.teamLt);
+  setToggleState('sports-lt-toggle', 'sports-lt', !!overlays.sportsLt);
+  setToggleState('sponsors-lt-toggle', 'sponsors-lt', !!overlays.sponsorsLt);
+  setToggleState('problem-lt-toggle', 'problem-lt', !!overlays.problemLt);
+  setToggleState('medaltable-toggle', 'medal-table', !!overlays.medalTable);
+  setToggleState('problemstats-toggle', 'problem-stats', !!overlays.problemStats);
+  setToggleState('comment-display-toggle', 'comment-display', !!overlays.comment);
+
+  scoreboardVisible = !!overlays.scoreboard;
+  const sbBtn = document.querySelector('#tab-firstac .btn-scoreboard');
+  if (sbBtn) {
+    sbBtn.textContent = scoreboardVisible ? '❌ Fechar' : '🏆 Placar';
+  }
+}
+
+function renderAllFromState() {
+  isApplyingRemoteState = true;
+  ['pessoas', 'time', 'barra', 'medaltable', 'problemstats', 'globalcolors'].forEach(loadPresetDropdown);
+  initProblems();
+  renderScoreboardManager();
+  renderMedalEditor();
+  renderProblemStatsEditor();
+  loadSettings();
+  loadYTConfig();
+  renderYTFavorites();
+  applyInputsFromState(sharedState.inputs);
+  syncActiveOverlaysUI(sharedState.activeOverlays);
+  isApplyingRemoteState = false;
+}
 
 // ============================================
 // CONFIGURAÇÕES GERAIS
 // ============================================
 
-const SETTINGS_KEY = 'broadcast_settings';
-
 function getSettings() {
-  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
-  catch (e) { return {}; }
+  return sharedState.settings || {};
 }
 
 function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  sharedState.settings = { ...sharedState.settings, ...settings };
+  socket.emit('state-update', { settings: sharedState.settings });
 }
 
 function loadSettings() {
   const s = getSettings();
   if (s.marathonName) {
-    document.getElementById('global-marathon-name').value = s.marathonName;
-    updateMarathonName();
+    const input = document.getElementById('global-marathon-name');
+    if (input && document.activeElement !== input) input.value = s.marathonName;
+    const header = document.getElementById('header-marathon-name');
+    if (header) header.textContent = s.marathonName;
   }
 }
 
 function updateMarathonName() {
   const name = document.getElementById('global-marathon-name').value.trim();
   if (!name) return;
-  const s = getSettings();
-  s.marathonName = name;
-  saveSettings(s);
-  // Atualiza header
+  sharedState.settings.marathonName = name;
+  sharedState.inputs['global-marathon-name'] = name;
   document.getElementById('header-marathon-name').textContent = name;
-  // Envia para o display
   socket.emit('update-settings', { marathonName: name });
   toast('⚙️ Nome da maratona atualizado!', 'success');
 }
@@ -54,18 +181,124 @@ function setLiveIndicator(id, active) {
 }
 
 // ============================================
-// CONEXÃO
+// CONEXÃO E EVENTOS DE SINCRONIZAÇÃO
 // ============================================
 
 const statusEl = document.getElementById('connection-status');
 socket.on('connect', () => {
   statusEl.classList.add('connected');
   statusEl.querySelector('.status-text').textContent = 'Conectado';
-  loadAllPresets();
+  injectLiveDots();
 });
+
 socket.on('disconnect', () => {
   statusEl.classList.remove('connected');
   statusEl.querySelector('.status-text').textContent = 'Desconectado';
+});
+
+socket.on('state-init', (serverState) => {
+  if (!serverState) return;
+  sharedState = {
+    ...sharedState,
+    ...serverState,
+    settings: { ...sharedState.settings, ...(serverState.settings || {}) },
+    presets: { ...sharedState.presets, ...(serverState.presets || {}) },
+    inputs: { ...sharedState.inputs, ...(serverState.inputs || {}) },
+    activeOverlays: { ...sharedState.activeOverlays, ...(serverState.activeOverlays || {}) }
+  };
+
+  renderAllFromState();
+
+  // Se o operador abriu com ?theme=final2026 ou ?theme=padrao explicitamente na URL (vindo do Hub)
+  if (!initialThemeHandled) {
+    initialThemeHandled = true;
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeParam = urlParams.get('theme');
+    if (themeParam === 'final2026' || themeParam === 'padrao') {
+      const targetLabel = themeParam === 'final2026' ? 'Maratona Final 2026' : 'Maratona Padrão';
+      if (sharedState.settings.activeTheme !== themeParam) {
+        sharedState.settings.activeTheme = themeParam;
+        socket.emit('update-settings', { activeTheme: themeParam });
+      }
+      ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
+        const presets = getPresets(type);
+        const idx = presets.findIndex(p => p.label === targetLabel);
+        if (idx !== -1) {
+          const select = document.getElementById('preset-' + type);
+          if (select) {
+            select.value = idx;
+            loadPreset(type, true);
+          }
+        }
+      });
+    }
+  }
+});
+
+socket.on('state-patched', (patch) => {
+  if (!patch) return;
+  isApplyingRemoteState = true;
+
+  if (patch.settings) {
+    Object.assign(sharedState.settings, patch.settings);
+    loadSettings();
+  }
+  if (patch.presets) {
+    Object.assign(sharedState.presets, patch.presets);
+    ['pessoas', 'time', 'barra', 'medaltable', 'problemstats', 'globalcolors'].forEach(loadPresetDropdown);
+  }
+  if (Array.isArray(patch.problems)) {
+    sharedState.problems = patch.problems;
+    initProblems();
+    renderProblemStatsEditor();
+  }
+  if (Array.isArray(patch.firstAcEntries)) {
+    sharedState.firstAcEntries = patch.firstAcEntries;
+    renderScoreboardManager();
+  }
+  if (Array.isArray(patch.medalTable)) {
+    sharedState.medalTable = patch.medalTable;
+    renderMedalEditor();
+  }
+  if (Array.isArray(patch.problemStats)) {
+    sharedState.problemStats = patch.problemStats;
+    renderProblemStatsEditor();
+  }
+  if (patch.ytConfig) {
+    Object.assign(sharedState.ytConfig, patch.ytConfig);
+    loadYTConfig();
+  }
+  if (Array.isArray(patch.ytFavorites)) {
+    sharedState.ytFavorites = patch.ytFavorites;
+    renderYTFavorites();
+  }
+  if (patch.inputs) {
+    Object.assign(sharedState.inputs, patch.inputs);
+    applyInputsFromState(patch.inputs);
+  }
+
+  isApplyingRemoteState = false;
+});
+
+socket.on('input-updated', (data) => {
+  if (!data || !data.id) return;
+  sharedState.inputs[data.id] = data.value;
+  const el = document.getElementById(data.id);
+  if (el && document.activeElement !== el) {
+    isApplyingRemoteState = true;
+    el.value = data.value;
+    isApplyingRemoteState = false;
+  }
+});
+
+socket.on('settings-updated', (settings) => {
+  if (!settings) return;
+  Object.assign(sharedState.settings, settings);
+  loadSettings();
+});
+
+socket.on('overlays-updated', (overlays) => {
+  syncActiveOverlaysUI(overlays);
 });
 
 // ============================================
@@ -73,10 +306,21 @@ socket.on('disconnect', () => {
 // ============================================
 
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.tab-btn[onclick*="${name}"]`).classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
+  const clickedBtn = document.querySelector(`.tab-btn[onclick*="'${name}'"]`) || document.querySelector(`.tab-btn[onclick*="${name}"]`);
+  const targetTab = document.getElementById('tab-' + name);
+  if (!clickedBtn || !targetTab) return;
+
+  const panel = clickedBtn.closest('.tabs-panel');
+  if (panel) {
+    panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    panel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  } else {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  }
+
+  clickedBtn.classList.add('active');
+  targetTab.classList.add('active');
 }
 
 // ============================================
@@ -104,30 +348,49 @@ function applyGlobalColors() {
   setVal('sports-bottom-text', g('role-color')); setVal('sports-geo1', g('geo1'));
   setVal('sports-geo2', g('geo2')); setVal('sports-logo-url', logoUrl);
 
+  syncInputsSnapshot();
   toast('🎨 Cores globais aplicadas!', 'success');
 }
 
-function setVal(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.value = val;
+    sharedState.inputs[id] = val;
+  }
+}
+
+function syncInputsSnapshot() {
+  if (isApplyingRemoteState) return;
+  const snapshot = {};
+  SYNCED_INPUT_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      snapshot[id] = el.value;
+      sharedState.inputs[id] = el.value;
+    }
+  });
+  socket.emit('state-update', { inputs: snapshot });
+}
 
 // ============================================
-// PRESETS (sistema unificado por tipo)
+// PRESETS (sistema unificado sincronizado no servidor)
 // ============================================
-
-function presetKey(type) { return 'broadcast_preset_' + type; }
 
 function getPresets(type) {
-  try { return JSON.parse(localStorage.getItem(presetKey(type))) || []; }
-  catch (e) { return []; }
+  return Array.isArray(sharedState.presets[type]) ? sharedState.presets[type] : [];
 }
 
 function savePresetsArr(type, arr) {
-  localStorage.setItem(presetKey(type), JSON.stringify(arr));
+  sharedState.presets[type] = arr;
   loadPresetDropdown(type);
+  socket.emit('state-update', { presets: { [type]: arr } });
 }
 
 function loadPresetDropdown(type) {
   const select = document.getElementById('preset-' + type);
   if (!select) return;
+  const currentVal = select.value;
   const presets = getPresets(type);
   select.innerHTML = '<option value="">-- Preset --</option>';
   presets.forEach((p, i) => {
@@ -136,18 +399,9 @@ function loadPresetDropdown(type) {
     opt.textContent = p.label;
     select.appendChild(opt);
   });
-}
-
-function loadAllPresets() {
-  ['pessoas', 'time', 'barra', 'medaltable', 'problemstats', 'globalcolors'].forEach(loadPresetDropdown);
-  initProblems();
-  renderScoreboardManager();
-  renderMedalEditor();
-  renderProblemStatsEditor();
-  loadSettings();
-  loadYTConfig();
-  renderYTFavorites();
-  injectLiveDots();
+  if (currentVal !== '' && presets[parseInt(currentVal)]) {
+    select.value = currentVal;
+  }
 }
 
 // Injeta bolinhas AO VIVO ao lado de cada toggle
@@ -157,6 +411,7 @@ function injectLiveDots() {
     'lt-right-toggle': 'lt-right',
     'team-lt-toggle': 'team-lt',
     'sports-lt-toggle': 'sports-lt',
+    'sponsors-lt-toggle': 'sponsors-lt',
     'problem-lt-toggle': 'problem-lt',
     'medaltable-toggle': 'medal-table',
     'problemstats-toggle': 'problem-stats',
@@ -166,13 +421,11 @@ function injectLiveDots() {
   Object.entries(toggles).forEach(([checkboxId, liveId]) => {
     const cb = document.getElementById(checkboxId);
     if (!cb) return;
-    // Remove dot anterior se existir
     const existing = document.getElementById('live-' + liveId);
     if (existing) existing.remove();
-    // Cria nova dot
     const dot = document.createElement('span');
     dot.id = 'live-' + liveId;
-    dot.className = 'live-dot';
+    dot.className = 'live-dot' + (activeLiveToggles[liveId] ? ' active' : '');
     cb.parentElement.parentElement.appendChild(dot);
   });
 }
@@ -225,9 +478,9 @@ function savePreset(type) {
       logoUrl: document.getElementById('global-logo-url').value.trim()
     };
   } else if (type === 'problemstats') {
-    data.rows = getProblemStats();
+    data.rows = JSON.parse(JSON.stringify(getProblemStats()));
   } else if (type === 'medaltable') {
-    data.rows = getMedalRows();
+    data.rows = JSON.parse(JSON.stringify(getMedalRows()));
   } else if (type === 'barra') {
     data.titleText = document.getElementById('sports-title').value.trim();
     data.subtitleText = document.getElementById('sports-subtitle').value.trim();
@@ -243,15 +496,15 @@ function savePreset(type) {
     };
   }
 
-  const presets = getPresets(type);
+  const presets = [...getPresets(type)];
   presets.push(data);
   savePresetsArr(type, presets);
-  toast(`💾 "${label}" salvo!`, 'success');
+  toast(`💾 "${label}" salvo para todos!`, 'success');
 }
 
 // --- Carregar ---
 
-function loadPreset(type) {
+function loadPreset(type, silent = false) {
   const select = document.getElementById('preset-' + type);
   const idx = select.value;
   if (idx === '') return;
@@ -268,7 +521,12 @@ function loadPreset(type) {
       topText:'', bottomText:'' });
   } else if (type === 'time') {
     setVal('team-lt-name', p.teamName || '');
-    setVal('team-lt-m1', p.m1 || ''); setVal('team-lt-m2', p.m2 || ''); setVal('team-lt-m3', p.m3 || '');
+    const fallbackMembers = (!p.m1 && !p.m2 && !p.m3 && p.teamMembers)
+      ? p.teamMembers.split(',').map(s => s.trim())
+      : [];
+    setVal('team-lt-m1', p.m1 || fallbackMembers[0] || '');
+    setVal('team-lt-m2', p.m2 || fallbackMembers[1] || '');
+    setVal('team-lt-m3', p.m3 || fallbackMembers[2] || '');
     if (p.colors) loadColors(p.colors, { top:'team-lt-top-bg', bottom:'team-lt-bottom-bg', logo:'team-lt-logo-bg',
       name:'team-lt-name-color', role:'team-lt-members-color', logoUrl:'team-lt-logo' });
   } else if (type === 'globalcolors') {
@@ -284,16 +542,21 @@ function loadPreset(type) {
       if (c.logoUrl !== undefined) setVal('global-logo-url', c.logoUrl);
     }
   } else if (type === 'problemstats') {
-    if (p.rows) { localStorage.setItem(PROBLEMSTATS_KEY, JSON.stringify(p.rows)); renderProblemStatsEditor(); }
+    if (p.rows) {
+      saveProblemStats(JSON.parse(JSON.stringify(p.rows)));
+    }
   } else if (type === 'medaltable') {
-    if (p.rows) { localStorage.setItem(MEDALTABLE_KEY, JSON.stringify(p.rows)); renderMedalEditor(); }
+    if (p.rows) {
+      saveMedalRows(JSON.parse(JSON.stringify(p.rows)));
+    }
   } else if (type === 'barra') {
     setVal('sports-title', p.titleText || ''); setVal('sports-subtitle', p.subtitleText || '');
     if (p.colors) loadColors(p.colors, { top:'sports-top-bg', bottom:'sports-bottom-bg', logo:'sports-logo-bg',
       name:'sports-top-text', role:'sports-bottom-text', geo1:'sports-geo1', geo2:'sports-geo2', logoUrl:'sports-logo-url' });
   }
 
-  toast(`📋 "${p.label}" carregado!`, 'success');
+  syncInputsSnapshot();
+  if (!silent) toast(`📋 "${p.label}" carregado!`, 'success');
 }
 
 function loadColors(c, ids) {
@@ -316,7 +579,7 @@ function deletePreset(type) {
   const select = document.getElementById('preset-' + type);
   const idx = select.value;
   if (idx === '') { toast('Selecione um preset!', 'error'); return; }
-  const presets = getPresets(type);
+  const presets = [...getPresets(type)];
   const p = presets[parseInt(idx)];
   if (!confirm(`Deletar "${p.label}"?`)) return;
   presets.splice(parseInt(idx), 1);
@@ -346,7 +609,8 @@ function triggerMedal() {
   const position = document.getElementById('medal-position').value;
   socket.emit('trigger-medal', { teamName, medalType, position });
   toast(`🏅 Medalha: ${teamName}`, 'success');
-  input.value = '';
+  setVal('medal-team', '');
+  socket.emit('input-change', { id: 'medal-team', value: '' });
 }
 
 // ============================================
@@ -359,7 +623,8 @@ function triggerBalloon() {
   if (!teamName) { toast('Digite o nome do time!', 'error'); input.focus(); return; }
   socket.emit('trigger-balloon', { teamName, color: selectedColor });
   toast(`🎈 Balão: ${teamName}`, 'success');
-  input.value = '';
+  setVal('balloon-team', '');
+  socket.emit('input-change', { id: 'balloon-team', value: '' });
 }
 
 // ============================================
@@ -373,7 +638,8 @@ function triggerCustomAlert() {
   if (!message) { toast('Digite uma mensagem!', 'error'); return; }
   socket.emit('trigger-alert', { type: 'accepted', message });
   toast('📢 ' + message, 'success');
-  document.getElementById('alert-message').value = '';
+  setVal('alert-message', '');
+  socket.emit('input-change', { id: 'alert-message', value: '' });
 }
 
 // ============================================
@@ -402,15 +668,28 @@ function getLowerThirdOptions() {
 function triggerLowerThird(side) {
   const name = document.getElementById(`lt-${side}-name`).value.trim();
   const role = document.getElementById(`lt-${side}-role`).value.trim();
-  if (!name) { toast('Digite o nome!', 'error'); return; }
-  if (!role) { toast('Digite a função!', 'error'); return; }
+  if (!name) {
+    document.getElementById(`lt-${side}-toggle`).checked = false;
+    toast('Digite o nome!', 'error');
+    return false;
+  }
+  if (!role) {
+    document.getElementById(`lt-${side}-toggle`).checked = false;
+    toast('Digite a função!', 'error');
+    return false;
+  }
   socket.emit('show-lowerthird', { side, name, role, options: getLowerThirdOptions() });
   toast(`📺 ${name}`, 'success');
+  return true;
 }
 
 function toggleLowerThird(side, active) {
-  if (active) { triggerLowerThird(side); setLiveIndicator('lt-' + side, true); }
-  else { hideLowerThird(side); setLiveIndicator('lt-' + side, false); }
+  if (active) {
+    if (triggerLowerThird(side)) setLiveIndicator('lt-' + side, true);
+  } else {
+    hideLowerThird(side);
+    setLiveIndicator('lt-' + side, false);
+  }
 }
 
 function hideLowerThird(side) {
@@ -428,10 +707,12 @@ function applyBothLTs() {
   if (leftName || leftRole) {
     socket.emit('show-lowerthird', { side: 'left', name: leftName || '', role: leftRole || '', options });
     document.getElementById('lt-left-toggle').checked = true;
+    setLiveIndicator('lt-left', true);
   }
   if (rightName || rightRole) {
     socket.emit('show-lowerthird', { side: 'right', name: rightName || '', role: rightRole || '', options });
     document.getElementById('lt-right-toggle').checked = true;
+    setLiveIndicator('lt-right', true);
   }
   toast('📺 LTs atualizados!', 'success');
 }
@@ -442,7 +723,11 @@ function applyBothLTs() {
 
 function applyTeamLT() {
   const teamName = document.getElementById('team-lt-name').value.trim();
-  if (!teamName) { toast('Digite o nome do time!', 'error'); return; }
+  if (!teamName) {
+    document.getElementById('team-lt-toggle').checked = false;
+    toast('Digite o nome do time!', 'error');
+    return false;
+  }
   const customLogo = document.getElementById('team-lt-logo').value.trim();
   const globalLogo = document.getElementById('global-logo-url').value.trim();
   const resolvedLogo = (customLogo && customLogo !== '/src/sbc_assets/logo-maratona.png')
@@ -463,12 +748,19 @@ function applyTeamLT() {
   const m3 = document.getElementById('team-lt-m3').value.trim();
   socket.emit('trigger-team-lt', { teamName, m1, m2, m3, options });
   document.getElementById('team-lt-toggle').checked = true;
+  setLiveIndicator('team-lt', true);
   toast('👥 ' + teamName, 'success');
+  return true;
 }
 
 function toggleTeamLT(active) {
-  if (active) { applyTeamLT(); setLiveIndicator('team-lt', true); }
-  else { socket.emit('trigger-team-lt-hide'); setLiveIndicator('team-lt', false); toast('Time removido', 'success'); }
+  if (active) {
+    applyTeamLT();
+  } else {
+    socket.emit('trigger-team-lt-hide');
+    setLiveIndicator('team-lt', false);
+    toast('Time removido', 'success');
+  }
 }
 
 // ============================================
@@ -489,6 +781,7 @@ function triggerSponsorsLT() {
   };
   socket.emit('trigger-sponsors-lt', options);
   document.getElementById('sponsors-lt-toggle').checked = true;
+  setLiveIndicator('sponsors-lt', true);
   toast('🤝 Sponsors!', 'success');
 }
 
@@ -501,7 +794,7 @@ function lightenColor(hex, percent) {
 }
 
 function toggleSponsorsLT(active) {
-  if (active) { triggerSponsorsLT(); setLiveIndicator('sponsors-lt', true); }
+  if (active) { triggerSponsorsLT(); }
   else { socket.emit('trigger-sponsors-lt-hide'); setLiveIndicator('sponsors-lt', false); toast('Sponsors removido', 'success'); }
 }
 
@@ -533,14 +826,20 @@ function getSportsLTOptions() {
 function applySportsLT() {
   const titleText = document.getElementById('sports-title').value.trim();
   const subtitleText = document.getElementById('sports-subtitle').value.trim();
-  if (!titleText && !subtitleText) { toast('Preencha ao menos um campo!', 'error'); return; }
+  if (!titleText && !subtitleText) {
+    document.getElementById('sports-lt-toggle').checked = false;
+    toast('Preencha ao menos um campo!', 'error');
+    return false;
+  }
   socket.emit('trigger-sports-lt', { options: getSportsLTOptions() });
   document.getElementById('sports-lt-toggle').checked = true;
+  setLiveIndicator('sports-lt', true);
   toast('🏟️ Barra atualizada!', 'success');
+  return true;
 }
 
 function toggleSportsLT(active) {
-  if (active) { applySportsLT(); setLiveIndicator('sports-lt', true); }
+  if (active) { applySportsLT(); }
   else { socket.emit('trigger-sports-lt-hide'); setLiveIndicator('sports-lt', false); toast('Barra removida', 'success'); }
 }
 
@@ -577,8 +876,9 @@ function triggerRankUp() {
   if (!position || position < 1) { toast('Digite a posição!', 'error'); return; }
   socket.emit('trigger-rankup', { teamName, position });
   toast(`🚀 ${teamName} #${position}!`, 'success');
-  document.getElementById('rankup-team').value = '';
-  document.getElementById('rankup-position').value = '';
+  setVal('rankup-team', '');
+  setVal('rankup-position', '');
+  socket.emit('state-update', { inputs: { 'rankup-team': '', 'rankup-position': '' } });
 }
 
 function triggerCountdown() {
@@ -592,18 +892,24 @@ function applyProblemLT() {
   const letter = select.value;
   const acs = document.getElementById('prob-acs-input').value.trim();
 
-  if (!letter) { toast('Selecione o problema!', 'error'); return; }
+  if (!letter) {
+    document.getElementById('problem-lt-toggle').checked = false;
+    toast('Selecione o problema!', 'error');
+    return false;
+  }
 
   const opt = select.options[select.selectedIndex];
   const name = opt.dataset.name || '';
 
   socket.emit('trigger-problem-lt', { letter, name, acs: acs || '0' });
   document.getElementById('problem-lt-toggle').checked = true;
+  setLiveIndicator('problem-lt', true);
   toast('📋 Problema ' + letter, 'success');
+  return true;
 }
 
 function toggleProblemLT(active) {
-  if (active) { applyProblemLT(); setLiveIndicator('problem-lt', true); }
+  if (active) { applyProblemLT(); }
   else { socket.emit('trigger-problem-lt-hide'); setLiveIndicator('problem-lt', false); toast('LT Problema removido', 'success'); }
 }
 
@@ -611,19 +917,10 @@ function toggleProblemLT(active) {
 // REGISTRO CENTRAL DE PROBLEMAS
 // ============================================
 
-const DEFAULT_PROBLEM_COLORS = [
-  '#FF3366', '#00BFFF', '#FFD700', '#00FF88', '#FF6B35', '#7B68EE',
-  '#FF69B4', '#E0E0E0', '#4169E1', '#CD853F', '#00CED1', '#ADFF2F'
-];
-
-const PROBLEMS_KEY = 'broadcast_problems';
-
 function getProblems() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PROBLEMS_KEY));
-    if (saved && saved.length > 0) return saved;
-  } catch (e) {}
-  // Default: A-L com cores ICPC
+  if (Array.isArray(sharedState.problems) && sharedState.problems.length > 0) {
+    return sharedState.problems;
+  }
   const letters = 'ABCDEFGHIJKL';
   return letters.split('').map((l, i) => ({
     letter: l,
@@ -633,9 +930,11 @@ function getProblems() {
 }
 
 function saveProblems(problems) {
-  localStorage.setItem(PROBLEMS_KEY, JSON.stringify(problems));
+  sharedState.problems = problems;
   refreshProblemDropdowns();
   renderProblemRegistry();
+  renderProblemStatsEditor();
+  socket.emit('state-update', { problems });
 }
 
 function refreshProblemDropdowns() {
@@ -643,6 +942,7 @@ function refreshProblemDropdowns() {
   // Dropdown do First AC
   const firstacSelect = document.getElementById('firstac-problem-select');
   if (firstacSelect) {
+    const currentVal = firstacSelect.value || sharedState.inputs['firstac-problem-select'] || '';
     firstacSelect.innerHTML = '<option value="">-- Selecione --</option>';
     problems.forEach(p => {
       const opt = document.createElement('option');
@@ -652,10 +952,12 @@ function refreshProblemDropdowns() {
       opt.dataset.name = p.name || '';
       firstacSelect.appendChild(opt);
     });
+    if (currentVal) firstacSelect.value = currentVal;
   }
   // Dropdown do LT Problema
   const probSelect = document.getElementById('prob-problem-select');
   if (probSelect) {
+    const currentVal = probSelect.value || sharedState.inputs['prob-problem-select'] || '';
     probSelect.innerHTML = '<option value="">-- Selecione --</option>';
     problems.forEach(p => {
       const opt = document.createElement('option');
@@ -664,6 +966,7 @@ function refreshProblemDropdowns() {
       opt.dataset.name = p.name || '';
       probSelect.appendChild(opt);
     });
+    if (currentVal) probSelect.value = currentVal;
   }
 }
 
@@ -674,10 +977,10 @@ function renderProblemRegistry() {
 
   container.innerHTML = problems.map((p, i) => `
     <div class="problem-row edit-row">
-      <div class="problem-letter-badge" style="background:${p.color}">${p.letter}</div>
-      <input type="text" value="${escapeHtml(p.name)}" placeholder="Nome do problema ${p.letter}"
+      <div class="problem-letter-badge" style="background:${escapeHtml(p.color)}">${escapeHtml(p.letter)}</div>
+      <input type="text" value="${escapeHtml(p.name)}" placeholder="Nome do problema ${escapeHtml(p.letter)}"
              onchange="updateProblem(${i}, 'name', this.value)" maxlength="35">
-      <input type="color" value="${p.color}"
+      <input type="color" value="${escapeHtml(p.color)}"
              onchange="updateProblem(${i}, 'color', this.value)">
       <button class="btn-mini btn-mini-del" onclick="deleteProblem(${i})" title="Remover">✕</button>
     </div>
@@ -685,15 +988,18 @@ function renderProblemRegistry() {
 }
 
 function updateProblem(idx, field, value) {
-  const problems = getProblems();
-  problems[idx][field] = value;
-  localStorage.setItem(PROBLEMS_KEY, JSON.stringify(problems));
+  const problems = [...getProblems()];
+  if (!problems[idx]) return;
+  problems[idx] = { ...problems[idx], [field]: value };
+  sharedState.problems = problems;
   refreshProblemDropdowns();
+  renderProblemStatsEditor();
   if (field === 'color') renderProblemRegistry();
+  socket.emit('state-update', { problems });
 }
 
 function addProblemRow() {
-  const problems = getProblems();
+  const problems = [...getProblems()];
   const usedLetters = problems.map(p => p.letter);
   const nextLetter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find(l => !usedLetters.includes(l)) || '?';
   problems.push({ letter: nextLetter, name: '', color: '#FFD700' });
@@ -701,22 +1007,27 @@ function addProblemRow() {
 }
 
 function deleteProblem(idx) {
-  const problems = getProblems();
+  const problems = [...getProblems()];
+  if (!problems[idx]) return;
   if (!confirm(`Remover Problema ${problems[idx].letter}?`)) return;
   problems.splice(idx, 1);
   saveProblems(problems);
 }
 
 function clearAllProblems() {
-  if (!confirm('Apagar TODOS os problemas?')) return;
-  localStorage.removeItem(PROBLEMS_KEY);
-  initProblems();
+  if (!confirm('Resetar TODOS os problemas para A-L padrão?')) return;
+  const defaultProbs = 'ABCDEFGHIJKL'.split('').map((l, i) => ({
+    letter: l,
+    name: '',
+    color: DEFAULT_PROBLEM_COLORS[i]
+  }));
+  saveProblems(defaultProbs);
   toast('🧹 Todos os problemas resetados!', 'success');
 }
 
 function escapeHtml(str) {
   const div = document.createElement('div');
-  div.textContent = str;
+  div.textContent = str == null ? '' : String(str);
   return div.innerHTML;
 }
 
@@ -730,26 +1041,28 @@ function initProblems() {
 // FIRST AC - Tracking e Placar
 // ============================================
 
-const FIRSTAC_KEY = 'broadcast_firstac_entries';
-
 function getFirstACEntries() {
-  try { return JSON.parse(localStorage.getItem(FIRSTAC_KEY)) || []; }
-  catch (e) { return []; }
+  return Array.isArray(sharedState.firstAcEntries) ? sharedState.firstAcEntries : [];
 }
 
 function saveFirstACEntry(team, university, problem, color) {
-  const entries = getFirstACEntries();
+  const entries = [...getFirstACEntries()];
   entries.push({ team, university, problem, color, time: new Date().toLocaleTimeString() });
-  localStorage.setItem(FIRSTAC_KEY, JSON.stringify(entries));
+  sharedState.firstAcEntries = entries;
+  renderScoreboardManager();
+  socket.emit('state-update', { firstAcEntries: entries });
+  if (scoreboardVisible) refreshScoreboard();
 }
 
 function deleteFirstACEntry(idx) {
-  const entries = getFirstACEntries();
+  const entries = [...getFirstACEntries()];
+  if (!entries[idx]) return;
   if (!confirm(`Remover "${entries[idx].team}" do placar?`)) return;
   entries.splice(idx, 1);
-  localStorage.setItem(FIRSTAC_KEY, JSON.stringify(entries));
+  sharedState.firstAcEntries = entries;
+  renderScoreboardManager();
+  socket.emit('state-update', { firstAcEntries: entries });
   toast('Entrada removida!', 'success');
-  // Se placar estiver visível, atualiza
   if (scoreboardVisible) refreshScoreboard();
 }
 
@@ -760,9 +1073,11 @@ function addManualFirstACEntry() {
   const problem = prompt('Problema (ex: Problema C - DNA):');
   if (!problem) return;
   const color = '#FFD700';
-  const entries = getFirstACEntries();
+  const entries = [...getFirstACEntries()];
   entries.push({ team, university, problem, color, time: new Date().toLocaleTimeString() });
-  localStorage.setItem(FIRSTAC_KEY, JSON.stringify(entries));
+  sharedState.firstAcEntries = entries;
+  renderScoreboardManager();
+  socket.emit('state-update', { firstAcEntries: entries });
   toast('✅ Entrada adicionada!', 'success');
   if (scoreboardVisible) refreshScoreboard();
 }
@@ -773,14 +1088,15 @@ function refreshScoreboard() {
 }
 
 function deleteLastFirstAC() {
-  const entries = getFirstACEntries();
+  const entries = [...getFirstACEntries()];
   if (entries.length === 0) { toast('Nenhuma entrada!', 'error'); return; }
   const last = entries[entries.length - 1];
   if (!confirm(`Remover última entrada: "${last.team}"?`)) return;
   entries.pop();
-  localStorage.setItem(FIRSTAC_KEY, JSON.stringify(entries));
-  toast('🗑 Última entrada removida!', 'success');
+  sharedState.firstAcEntries = entries;
   renderScoreboardManager();
+  socket.emit('state-update', { firstAcEntries: entries });
+  toast('🗑 Última entrada removida!', 'success');
   if (scoreboardVisible) refreshScoreboard();
 }
 
@@ -795,26 +1111,19 @@ function renderScoreboardManager() {
   container.innerHTML = entries.map((e, i) => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;font-size:13px;border-bottom:1px solid var(--border);gap:8px;">
       <span style="color:#fff;font-weight:600;">${i+1}.</span>
-      <span style="flex:1;"><strong>${e.team}</strong> ${e.university ? '<small style="color:var(--text-dim)">('+e.university+')</small>' : ''}</span>
-      <span style="color:var(--text-dim);font-size:12px;">${e.problem}</span>
-      <button class="btn-mini btn-mini-del" onclick="deleteFirstACEntry(${i});renderScoreboardManager();" style="width:28px;height:28px;font-size:12px;" title="Remover">✕</button>
+      <span style="flex:1;"><strong>${escapeHtml(e.team)}</strong> ${e.university ? '<small style="color:var(--text-dim)">('+escapeHtml(e.university)+')</small>' : ''}</span>
+      <span style="color:var(--text-dim);font-size:12px;">${escapeHtml(e.problem)}</span>
+      <button class="btn-mini btn-mini-del" onclick="deleteFirstACEntry(${i})" style="width:28px;height:28px;font-size:12px;" title="Remover">✕</button>
     </div>
   `).join('');
 }
 
 function clearFirstACEntries() {
   if (!confirm('Apagar TODAS as entradas do placar?')) return;
-  localStorage.removeItem(FIRSTAC_KEY);
+  sharedState.firstAcEntries = [];
   renderScoreboardManager();
+  socket.emit('state-update', { firstAcEntries: [] });
   toast('🧹 Placar limpo!', 'success');
-}
-
-function onFirstACProblemChange() {
-  // O nome do problema já está no dataset da option
-}
-
-function onProblemLTSelect() {
-  // O nome do problema já está no dataset da option
 }
 
 function triggerFirstAC() {
@@ -829,13 +1138,14 @@ function triggerFirstAC() {
   const opt = select.options[select.selectedIndex];
   const color = opt.dataset.color || '#FFD700';
   const problemName = opt.dataset.name || '';
-  const fullProblemName = `Problema ${letter} - ${problemName}`;
+  const fullProblemName = problemName ? `Problema ${letter} - ${problemName}` : `Problema ${letter}`;
 
   saveFirstACEntry(teamName, university, fullProblemName, color);
   socket.emit('trigger-firstac', { teamName, problemName: fullProblemName, color });
   toast(`⭐ First AC: ${teamName} - ${fullProblemName}`, 'success');
-  document.getElementById('firstac-team').value = '';
-  document.getElementById('firstac-university').value = '';
+  setVal('firstac-team', '');
+  setVal('firstac-university', '');
+  socket.emit('state-update', { inputs: { 'firstac-team': '', 'firstac-university': '' } });
 }
 
 let scoreboardVisible = false;
@@ -862,16 +1172,14 @@ function toggleScoreboard() {
 // PLACAR DE MEDALHAS
 // ============================================
 
-const MEDALTABLE_KEY = 'broadcast_medal_table';
-
 function getMedalRows() {
-  try { return JSON.parse(localStorage.getItem(MEDALTABLE_KEY)) || []; }
-  catch (e) { return []; }
+  return Array.isArray(sharedState.medalTable) ? sharedState.medalTable : [];
 }
 
 function saveMedalRows(rows) {
-  localStorage.setItem(MEDALTABLE_KEY, JSON.stringify(rows));
+  sharedState.medalTable = rows;
   renderMedalEditor();
+  socket.emit('state-update', { medalTable: rows });
 }
 
 function renderMedalEditor() {
@@ -898,67 +1206,70 @@ function renderMedalEditor() {
 }
 
 function updateMedalRow(idx, field, value) {
-  const rows = getMedalRows();
-  rows[idx][field] = value;
-  localStorage.setItem(MEDALTABLE_KEY, JSON.stringify(rows));
+  const rows = [...getMedalRows()];
+  if (!rows[idx]) return;
+  rows[idx] = { ...rows[idx], [field]: value };
+  sharedState.medalTable = rows;
+  socket.emit('state-update', { medalTable: rows });
 }
 
 function addMedalRow() {
-  const rows = getMedalRows();
+  const rows = [...getMedalRows()];
   rows.push({ name: '', gold: 0, silver: 0, bronze: 0 });
   saveMedalRows(rows);
 }
 
 function deleteMedalRow(idx) {
-  const rows = getMedalRows();
+  const rows = [...getMedalRows()];
   rows.splice(idx, 1);
   saveMedalRows(rows);
 }
 
 function clearMedalTable() {
   if (!confirm('Limpar todas as universidades?')) return;
-  localStorage.removeItem(MEDALTABLE_KEY);
-  renderMedalEditor();
+  saveMedalRows([]);
   toast('🧹 Placar limpo!', 'success');
 }
 
 function applyMedalTable() {
   const rows = getMedalRows();
-  const filled = rows.filter(r => r.name.trim());
-  if (filled.length === 0) { toast('Adicione ao menos uma universidade!', 'error'); return; }
+  const filled = rows.filter(r => r.name && r.name.trim());
+  if (filled.length === 0) {
+    document.getElementById('medaltable-toggle').checked = false;
+    toast('Adicione ao menos uma universidade!', 'error');
+    return false;
+  }
   socket.emit('trigger-medal-table', { rows: filled });
   document.getElementById('medaltable-toggle').checked = true;
+  setLiveIndicator('medal-table', true);
   toast('🏅 Placar atualizado!', 'success');
+  return true;
 }
 
 function toggleMedalTable(active) {
-  if (active) { applyMedalTable(); setLiveIndicator('medal-table', true); }
+  if (active) { applyMedalTable(); }
   else { socket.emit('trigger-medal-table-hide'); setLiveIndicator('medal-table', false); toast('Placar escondido', 'success'); }
 }
-
-// Atualiza loadAllPresets e savePreset/loadPreset para suportar medaltable
 
 // ============================================
 // ESTATÍSTICAS DE PROBLEMAS (ACs + badges)
 // ============================================
 
-const PROBLEMSTATS_KEY = 'broadcast_problem_stats';
-
 function getProblemStats() {
-  try { return JSON.parse(localStorage.getItem(PROBLEMSTATS_KEY)) || []; }
-  catch (e) { return []; }
+  return Array.isArray(sharedState.problemStats) ? sharedState.problemStats : [];
 }
 
 function getAvailableProblems() {
-  const globalProbs = getProblems().filter(p => p.name.trim());
+  const globalProbs = getProblems().filter(p => p.name && p.name.trim());
   const statsProbs = getProblemStats();
   const usedLetters = statsProbs.map(s => s.letter);
   return globalProbs.filter(p => !usedLetters.includes(p.letter));
 }
 
 function saveProblemStats(rows) {
-  localStorage.setItem(PROBLEMSTATS_KEY, JSON.stringify(rows));
+  sharedState.problemStats = rows;
   renderProblemStatsEditor();
+  socket.emit('state-update', { problemStats: rows });
 }
 
 function renderProblemStatsEditor() {
@@ -973,7 +1284,7 @@ function renderProblemStatsEditor() {
   } else {
     html += rows.map((r, i) => `
       <div class="problemstats-edit-row edit-row">
-        <div class="problemstats-letter edit-badge" style="background:${r.color || '#FFD700'}">${r.letter}</div>
+        <div class="problemstats-letter edit-badge" style="background:${escapeHtml(r.color || '#FFD700')}">${escapeHtml(r.letter)}</div>
         <input type="text" value="${escapeHtml(r.name || '')}" placeholder="Nome" onchange="updateProblemStat(${i},'name',this.value)" maxlength="30" style="text-align:left;">
         <input type="number" value="${r.acs||0}" min="0" max="999" onchange="updateProblemStat(${i},'acs',parseInt(this.value)||0)">
         <select onchange="updateProblemStat(${i},'badge',this.value)">
@@ -992,7 +1303,7 @@ function renderProblemStatsEditor() {
       <div style="display:flex;gap:8px;margin-top:8px;">
         <select id="add-problem-select" style="flex:1;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:10px;color:#00FF88;font-size:13px;font-family:'Montserrat',sans-serif;font-weight:700;cursor:pointer;">
           <option value="">➕ Adicionar do banco...</option>
-          ${available.map(p => `<option value="${p.letter}">Problema ${p.letter} - ${p.name}</option>`).join('')}
+          ${available.map(p => `<option value="${escapeHtml(p.letter)}">Problema ${escapeHtml(p.letter)} - ${escapeHtml(p.name)}</option>`).join('')}
         </select>
         <button class="btn-mini" onclick="addProblemFromBank()" style="background:rgba(0,255,136,0.1);border-color:rgba(0,255,136,0.3);color:#00FF88;width:42px;height:42px;">✓</button>
       </div>`;
@@ -1010,7 +1321,7 @@ function addProblemFromBank() {
   const prob = globalProbs.find(p => p.letter === letter);
   if (!prob) return;
 
-  const rows = getProblemStats();
+  const rows = [...getProblemStats()];
   rows.push({
     letter: prob.letter,
     name: prob.name,
@@ -1023,34 +1334,41 @@ function addProblemFromBank() {
 }
 
 function updateProblemStat(idx, field, value) {
-  const rows = getProblemStats();
-  rows[idx][field] = value;
-  localStorage.setItem(PROBLEMSTATS_KEY, JSON.stringify(rows));
+  const rows = [...getProblemStats()];
+  if (!rows[idx]) return;
+  rows[idx] = { ...rows[idx], [field]: value };
+  sharedState.problemStats = rows;
+  socket.emit('state-update', { problemStats: rows });
 }
 
 function deleteProblemStat(idx) {
-  const rows = getProblemStats();
+  const rows = [...getProblemStats()];
   rows.splice(idx, 1);
   saveProblemStats(rows);
 }
 
 function resetProblemStats() {
   if (!confirm('Remover TODOS os problemas da tabela?')) return;
-  localStorage.removeItem(PROBLEMSTATS_KEY);
-  renderProblemStatsEditor();
+  saveProblemStats([]);
   toast('🧹 Tabela limpa!', 'success');
 }
 
 function applyProblemStats() {
   const rows = getProblemStats();
-  if (rows.length === 0) { toast('Nenhum problema!', 'error'); return; }
+  if (rows.length === 0) {
+    document.getElementById('problemstats-toggle').checked = false;
+    toast('Nenhum problema!', 'error');
+    return false;
+  }
   socket.emit('trigger-problem-stats', { rows });
   document.getElementById('problemstats-toggle').checked = true;
+  setLiveIndicator('problem-stats', true);
   toast('📊 Estatísticas atualizadas!', 'success');
+  return true;
 }
 
 function toggleProblemStats(active) {
-  if (active) { applyProblemStats(); setLiveIndicator('problem-stats', true); }
+  if (active) { applyProblemStats(); }
   else { socket.emit('trigger-problem-stats-hide'); setLiveIndicator('problem-stats', false); toast('Tabela escondida', 'success'); }
 }
 
@@ -1058,49 +1376,46 @@ function toggleProblemStats(active) {
 // YOUTUBE CHAT
 // ============================================
 
-const YT_CONFIG_KEY = 'broadcast_yt_config';
-const YT_FAVORITES_KEY = 'broadcast_yt_favorites';
 let activeCommentId = null;
 
 function getYTConfig() {
-  try { return JSON.parse(localStorage.getItem(YT_CONFIG_KEY)) || {}; }
-  catch (e) { return {}; }
+  return sharedState.ytConfig || { apiKey: '', liveChatId: '' };
 }
 
 function saveYTConfig(config) {
-  localStorage.setItem(YT_CONFIG_KEY, JSON.stringify(config));
+  sharedState.ytConfig = { ...sharedState.ytConfig, ...config };
+  socket.emit('state-update', { ytConfig: sharedState.ytConfig });
 }
 
 function getYTFavorites() {
-  try { return JSON.parse(localStorage.getItem(YT_FAVORITES_KEY)) || []; }
-  catch (e) { return []; }
+  return Array.isArray(sharedState.ytFavorites) ? sharedState.ytFavorites : [];
 }
 
 function saveYTFavorite(author, message) {
-  const favs = getYTFavorites();
-  // Evita duplicatas
+  const favs = [...getYTFavorites()];
   if (favs.find(f => f.message === message && f.author === author)) {
     toast('Já está nos favoritos!', 'error');
     return;
   }
   favs.unshift({ author, message, time: new Date().toLocaleTimeString() });
-  localStorage.setItem(YT_FAVORITES_KEY, JSON.stringify(favs.slice(0, 30)));
+  const trimmed = favs.slice(0, 30);
+  sharedState.ytFavorites = trimmed;
   renderYTFavorites();
+  socket.emit('state-update', { ytFavorites: trimmed });
   toast('⭐ Favorito salvo!', 'success');
 }
 
 function clearYTFavorites() {
   if (!confirm('Limpar todos os favoritos?')) return;
-  localStorage.removeItem(YT_FAVORITES_KEY);
+  sharedState.ytFavorites = [];
   renderYTFavorites();
+  socket.emit('state-update', { ytFavorites: [] });
   toast('Favoritos limpos!', 'success');
 }
 
 function clickFavorite(author, message, el) {
-  // Destaca visualmente
   document.querySelectorAll('.yt-msg').forEach(m => m.classList.remove('active'));
   if (el) el.classList.add('active');
-  // Envia pro display
   socket.emit('trigger-show-comment', { author, message });
   document.getElementById('comment-display-toggle').checked = true;
   setLiveIndicator('comment-display', true);
@@ -1118,17 +1433,16 @@ function renderYTFavorites() {
   }
   section.style.display = 'block';
 
-  container.innerHTML = favs.map((f, i) => `
-    <div class="yt-msg fav-msg" style="border-color:rgba(255,215,0,0.15);" data-author="${f.author.replace(/"/g,'&quot;')}" data-message="${f.message.replace(/"/g,'&quot;')}">
+  container.innerHTML = favs.map((f) => `
+    <div class="yt-msg fav-msg" style="border-color:rgba(255,215,0,0.15);" data-author="${escapeHtml(f.author).replace(/"/g,'&quot;')}" data-message="${escapeHtml(f.message).replace(/"/g,'&quot;')}">
       <div class="yt-msg-header">
-        <strong style="color:#FFD700;">⭐ ${f.author}</strong>
-        <small>${f.time}</small>
+        <strong style="color:#FFD700;">⭐ ${escapeHtml(f.author)}</strong>
+        <small>${escapeHtml(f.time)}</small>
       </div>
-      <div class="yt-msg-text">${f.message}</div>
+      <div class="yt-msg-text">${escapeHtml(f.message)}</div>
     </div>
   `).join('');
 
-  // Adiciona eventos via JS (mais seguro que inline)
   container.querySelectorAll('.fav-msg').forEach(el => {
     el.onclick = () => {
       const author = el.dataset.author;
@@ -1143,6 +1457,7 @@ function connectYTChat() {
   const liveChatId = document.getElementById('yt-chatid').value.trim();
 
   if (!apiKey || !liveChatId) {
+    document.getElementById('yt-chat-toggle').checked = false;
     toast('Preencha API Key e Live Chat ID!', 'error');
     return;
   }
@@ -1193,7 +1508,12 @@ socket.on('yt-chat-messages', (messages) => {
   const container = document.getElementById('yt-messages');
   if (!container) return;
 
+  // Remove texto de placeholder se existir
+  const placeholder = container.querySelector('p');
+  if (placeholder) placeholder.remove();
+
   messages.forEach(msg => {
+    if (document.getElementById('msg-' + msg.id)) return;
     const div = document.createElement('div');
     div.className = 'yt-msg';
     div.id = 'msg-' + msg.id;
@@ -1249,26 +1569,28 @@ socket.on('yt-chat-messages', (messages) => {
 socket.on('yt-status', (data) => {
   const toggle = document.getElementById('yt-chat-toggle');
   if (toggle) toggle.checked = data.active;
-  if (data.active) setLiveIndicator('yt-chat', true);
+  setLiveIndicator('yt-chat', !!data.active);
 });
 
 // Carrega config salva
 function loadYTConfig() {
   const config = getYTConfig();
-  if (config.apiKey) document.getElementById('yt-apikey').value = config.apiKey;
-  if (config.liveChatId) document.getElementById('yt-chatid').value = config.liveChatId;
+  const apiKeyEl = document.getElementById('yt-apikey');
+  const chatIdEl = document.getElementById('yt-chatid');
+  if (apiKeyEl && document.activeElement !== apiKeyEl && config.apiKey !== undefined) {
+    apiKeyEl.value = config.apiKey;
+  }
+  if (chatIdEl && document.activeElement !== chatIdEl && config.liveChatId !== undefined) {
+    chatIdEl.value = config.liveChatId;
+  }
 }
 
 // ============================================
-// EFEITOS
+// EFEITOS E ATALHOS
 // ============================================
 
 function triggerConfetti() { socket.emit('trigger-confetti'); toast('🎊 Confete!', 'success'); }
 function triggerClear() { socket.emit('trigger-clear'); toast('🧹 Limpo!', 'success'); }
-
-// ============================================
-// TECLAS DE ATALHO
-// ============================================
 
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' && e.key === 'Enter') {
@@ -1300,196 +1622,7 @@ function toast(message, type) {
   setTimeout(() => el.remove(), 2500);
 }
 
-// Inject default SBC Identity preset on load
 window.addEventListener('DOMContentLoaded', () => {
-  const type = 'globalcolors';
-  const presets = getPresets(type);
-  const sbcPresetExists = presets.find(p => p.label === 'Identidade Maratona SBC');
-  
-  if (!sbcPresetExists) {
-    presets.push({
-      label: 'Identidade Maratona SBC',
-      colors: {
-        topBg: '#2962ff',
-        bottomBg: '#00e5ff',
-        logoBg: '#10152b',
-        nameColor: '#ffffff',
-        roleColor: '#0b0e27',
-        geo1: '#ff6a00',
-        geo2: '#9d00ff',
-        logoUrl: '/src/sbc_assets/sabia-voando.png'
-      }
-    });
-    savePresetsArr(type, presets);
-  }
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  const typeBarra = 'barra';
-  const presetsBarra = getPresets(typeBarra);
-  const sbcBarraExists = presetsBarra.find(p => p.label === 'Identidade Maratona SBC');
-  
-  if (!sbcBarraExists) {
-    presetsBarra.push({
-      label: 'Identidade Maratona SBC',
-      titleText: 'AO VIVO • MARATONA SBC',
-      subtitleText: 'PROGRAMAÇÃO',
-      colors: {
-        topBg: '#2962ff',
-        bottomBg: '#00e5ff',
-        logoBg: '#10152b',
-        nameColor: '#ffffff',
-        roleColor: '#0b0e27',
-        geo1: '#ff6a00',
-        geo2: '#9d00ff',
-        logoUrl: '/src/sbc_assets/sabia-voando.png'
-      }
-    });
-    savePresetsArr(typeBarra, presetsBarra);
-  }
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  const type = 'pessoas';
-  const presets = getPresets(type);
-  const exists = presets.find(p => p.label === 'Identidade Maratona SBC');
-  
-  if (!exists) {
-    presets.push({
-      label: 'Identidade Maratona SBC',
-      leftName: 'NOME DO CONVIDADO',
-      leftRole: 'ESPECIALISTA',
-      rightName: 'NOME DO HOST',
-      rightRole: 'APRESENTADOR',
-      colors: {
-        topBg: '#2962ff',
-        bottomBg: '#00e5ff',
-        logoBg: '#10152b',
-        nameColor: '#ffffff',
-        roleColor: '#0b0e27',
-        geo1: '#ff6a00',
-        geo2: '#9d00ff',
-        logoUrl: '/src/sbc_assets/sabia-voando.png'
-      }
-    });
-    savePresetsArr(type, presets);
-  }
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  const type = 'time';
-  const presets = getPresets(type);
-  const exists = presets.find(p => p.label === 'Identidade Maratona SBC');
-  
-  if (!exists) {
-    presets.push({
-      label: 'Identidade Maratona SBC',
-      teamName: 'NOME DO TIME',
-      teamMembers: 'Membro 1, Membro 2, Membro 3',
-      colors: {
-        topBg: '#2962ff',
-        bottomBg: '#00e5ff',
-        logoBg: '#10152b',
-        nameColor: '#ffffff',
-        roleColor: '#0b0e27',
-        geo1: '#ff6a00',
-        geo2: '#9d00ff',
-        logoUrl: '/src/sbc_assets/sabia-voando.png'
-      }
-    });
-    savePresetsArr(type, presets);
-  }
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
-    const presets = getPresets(type);
-    
-    // Rename existing preset & update logo to sabia-voando.png
-    presets.forEach(p => {
-      if (p.label === 'Identidade Maratona SBC' || p.label === 'Maratona Padrão') {
-        p.label = 'Maratona Padrão';
-        if (p.colors) p.colors.logoUrl = '/src/sbc_assets/sabia-voando.png';
-      }
-      if (p.label === 'Maratona Final 2026') {
-        if (p.colors) p.colors.logoUrl = '/src/sbc_assets/sabia-voando.png';
-      }
-    });
-
-    // Add new preset if not exists
-    const finalExists = presets.find(p => p.label === 'Maratona Final 2026');
-    if (!finalExists) {
-      const newPreset = {
-        label: 'Maratona Final 2026',
-        colors: {
-          topBg: '#10152b', // Escuro profundo do site
-          bottomBg: '#0b0e27', // Ainda mais escuro
-          logoBg: '#10152b', 
-          nameColor: '#00e5ff', // Texto nome em Ciano Neon
-          roleColor: '#94a3b8', // Texto role em cinza claro (muted)
-          geo1: '#ff6a00',
-          geo2: '#9d00ff',
-          logoUrl: '/src/sbc_assets/sabia-voando.png'
-        }
-      };
-
-      if (type === 'pessoas') {
-        newPreset.leftName = 'NOME DA PESSOA';
-        newPreset.leftRole = 'CARGO / FUNÇÃO';
-        newPreset.rightName = 'NOME DA PESSOA';
-        newPreset.rightRole = 'CARGO / FUNÇÃO';
-      } else if (type === 'time') {
-        newPreset.teamName = 'NOME DO TIME FINALISTA';
-        newPreset.teamMembers = 'COMPETIDOR 1, COMPETIDOR 2, COMPETIDOR 3';
-      } else if (type === 'barra') {
-        newPreset.titleText = 'FINAL BRASILEIRA 2026';
-        newPreset.subtitleText = 'UBERLÂNDIA/MG';
-      }
-
-      presets.push(newPreset);
-    }
-    
-    savePresetsArr(type, presets);
-  });
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-  // Garantir logo padrão do Sabiá nos campos
-  ['global-logo-url', 'lt-logo-url', 'team-lt-logo', 'sports-logo-url'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el && (!el.value || el.value.includes('logo-maratona.png'))) {
-      el.value = '/src/sbc_assets/sabia-voando.png';
-    }
-  });
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const themeParam = urlParams.get('theme') || 'final2026';
-  
-  if (themeParam === 'final2026') {
-    socket.emit('update-settings', { activeTheme: 'final2026' });
-    ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
-      const presets = getPresets(type);
-      const idx = presets.findIndex(p => p.label === 'Maratona Final 2026');
-      if (idx !== -1) {
-        const select = document.getElementById('preset-' + type);
-        if (select) {
-          select.value = idx;
-          loadPreset(type);
-        }
-      }
-    });
-  } else if (themeParam === 'padrao') {
-    socket.emit('update-settings', { activeTheme: 'padrao' });
-    ['globalcolors', 'pessoas', 'time', 'barra'].forEach(type => {
-      const presets = getPresets(type);
-      const idx = presets.findIndex(p => p.label === 'Maratona Padrão');
-      if (idx !== -1) {
-        const select = document.getElementById('preset-' + type);
-        if (select) {
-          select.value = idx;
-          loadPreset(type);
-        }
-      }
-    });
-  }
+  bindSyncedInputs();
+  injectLiveDots();
 });
