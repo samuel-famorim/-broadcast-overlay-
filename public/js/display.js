@@ -736,21 +736,43 @@ function showComment(author, message, avatarUrl) {
   document.getElementById('comment-message').textContent = message || '';
   document.getElementById('comment-author').textContent = author || 'Anônimo';
 
-  const avatar = document.getElementById('comment-avatar');
-  const fallback = document.getElementById('comment-avatar-fallback');
-  avatar.onerror = () => { avatar.style.display = 'none'; fallback.style.display = ''; };
-  if (avatarUrl) {
-    avatar.src = avatarUrl;
-    avatar.style.display = '';
-    fallback.style.display = 'none';
-  } else {
-    avatar.removeAttribute('src');
-    avatar.style.display = 'none';
-    fallback.style.display = '';
-  }
+  setCommentAvatar(avatarUrl);
 
   commentOverlay.classList.remove('hidden');
   commentOverlay.classList.add('active');
+}
+
+// O CDN do YouTube devolve 429 (HTML) em rajada e o Chromium bloqueia por ORB;
+// por isso tenta 4x antes de cair no balão.
+let commentAvatarUrl = '';
+
+function setCommentAvatar(url) {
+  const avatar = document.getElementById('comment-avatar');
+  const fallback = document.getElementById('comment-avatar-fallback');
+  commentAvatarUrl = url || '';
+  avatar.onload = avatar.onerror = null;
+  avatar.removeAttribute('src');
+  avatar.style.display = 'none';
+  fallback.style.display = '';
+  if (!commentAvatarUrl) return;
+
+  const current = commentAvatarUrl;
+  let tries = 0;
+  const load = () => {
+    if (commentAvatarUrl !== current) return; // outro comentário já assumiu
+    const src = tries ? current + (current.includes('?') ? '&' : '?') + 'r=' + tries : current;
+    avatar.onload = () => {
+      if (commentAvatarUrl !== current) return;
+      avatar.style.display = '';
+      fallback.style.display = 'none';
+    };
+    avatar.onerror = () => {
+      if (commentAvatarUrl !== current || ++tries >= 4) return;
+      setTimeout(load, 1000 * tries);
+    };
+    avatar.src = src;
+  };
+  load();
 }
 
 // Esconde e avisa o painel
