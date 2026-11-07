@@ -608,7 +608,13 @@
                 <input type="text" id="yt-chatid" placeholder="ID do chat ao vivo" maxlength="80">
               </div>
             </div>
-            <button class="btn btn-sports" onclick="connectYTChat()">🔌 Conectar ao Chat</button>
+            
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;" id="yt-controls-wrapper">
+              <button class="btn btn-sports" id="btn-yt-connect" onclick="connectYTChat()" style="flex:1;">🔌 Conectar</button>
+              <button class="btn btn-sports" id="btn-yt-pause" onclick="pauseYTChat()" style="display:none; background:#ff6a00; flex:1;">⏸ Pausar</button>
+              <button class="btn btn-sports" id="btn-yt-resume" onclick="resumeYTChat()" style="display:none; flex:1;">▶ Retomar</button>
+              <button class="btn btn-sports" id="btn-yt-sync" onclick="syncYTChat()" style="display:none; background:var(--neon-cyan); color:var(--bg-dark); flex:1;">🔄 Sincronizar</button>
+            </div>
 
             <div class="toggle-row">
               <span class="toggle-label">Exibir no Display</span>

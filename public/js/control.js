@@ -1576,7 +1576,49 @@ socket.on('yt-status', (data) => {
   const toggle = document.getElementById('yt-chat-toggle');
   if (toggle) toggle.checked = data.active;
   setLiveIndicator('yt-chat', !!data.active);
+  
+  const btnConnect = document.getElementById('btn-yt-connect');
+  const btnPause = document.getElementById('btn-yt-pause');
+  const btnResume = document.getElementById('btn-yt-resume');
+  const btnSync = document.getElementById('btn-yt-sync');
+  
+  if (btnConnect) {
+    if (!data.active) {
+      // Desconectado
+      btnConnect.style.display = 'block';
+      btnPause.style.display = 'none';
+      btnResume.style.display = 'none';
+      btnSync.style.display = 'none';
+    } else if (data.paused) {
+      // Conectado e pausado
+      btnConnect.style.display = 'none';
+      btnPause.style.display = 'none';
+      btnResume.style.display = 'block';
+      btnSync.style.display = 'block';
+    } else {
+      // Conectado e ativo
+      btnConnect.style.display = 'none';
+      btnPause.style.display = 'block';
+      btnResume.style.display = 'none';
+      btnSync.style.display = 'block';
+    }
+  }
 });
+
+function pauseYTChat() {
+  socket.emit('yt-pause');
+  toast('⏸ Polling do chat pausado', 'success');
+}
+
+function resumeYTChat() {
+  socket.emit('yt-resume');
+  toast('▶ Polling do chat retomado', 'success');
+}
+
+function syncYTChat() {
+  socket.emit('yt-sync');
+  toast('🔄 Sincronizando chat agora...', 'success');
+}
 
 // Carrega config salva
 function loadYTConfig() {

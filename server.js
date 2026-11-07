@@ -645,7 +645,7 @@ io.on('connection', (socket) => {
   if (lastYtMessages.length > 0) {
     socket.emit('yt-chat-messages', lastYtMessages);
   }
-  socket.emit('yt-status', { active: !!ytPolling });
+  socket.emit('yt-status', { active: ytIsConnected, paused: ytIsPaused });
 
   // YouTube Chat
   socket.on('yt-start', (config) => {
@@ -655,17 +655,31 @@ io.on('connection', (socket) => {
       socket.broadcast.emit('state-patched', { ytConfig: appState.ytConfig });
     }
     startYTPolling(config.apiKey, config.liveChatId);
-    io.emit('yt-status', { active: true });
+    io.emit('yt-status', { active: true, paused: false });
   });
 
   socket.on('yt-stop', () => {
     stopYTPolling();
     lastYtMessages = [];
-    io.emit('yt-status', { active: false });
+    io.emit('yt-status', { active: false, paused: false });
+  });
+
+  socket.on('yt-pause', () => {
+    pauseYTPolling();
+    io.emit('yt-status', { active: true, paused: true });
+  });
+
+  socket.on('yt-resume', () => {
+    resumeYTPolling();
+    io.emit('yt-status', { active: true, paused: false });
+  });
+
+  socket.on('yt-sync', () => {
+    forceYTSync();
   });
 
   socket.on('yt-status-request', () => {
-    socket.emit('yt-status', { active: !!ytPolling });
+    socket.emit('yt-status', { active: ytIsConnected, paused: ytIsPaused });
   });
 
   socket.on('trigger-show-comment', (data) => {
@@ -711,9 +725,89 @@ io.on('connection', (socket) => {
 
 let ytPolling = null;
 let ytConfig = { apiKey: '', liveChatId: '' };
+let ytNextPageToken = null;
+let ytIsPaused = false;
+let ytIsConnected = false;
 let lastYtMessages = []; // últimas 50 mensagens
 
-// Inicia o polling do chat do YouTube
+function stopYTPolling() {
+  if (ytPolling) { clearTimeout(ytPolling); ytPolling = null; }
+  ytIsConnected = false;
+  console.log('[yt-chat] Polling parado');
+}
+
+function pauseYTPolling() {
+  ytIsPaused = true;
+  if (ytPolling) { clearTimeout(ytPolling); ytPolling = null; }
+  console.log('[yt-chat] Polling pausado');
+}
+
+function resumeYTPolling() {
+  if (!ytIsConnected) return;
+  ytIsPaused = false;
+  console.log('[yt-chat] Polling retomado');
+  pollYTApi();
+}
+
+async function forceYTSync() {
+  if (!ytIsConnected) return;
+  console.log('[yt-chat] Sincronização manual...');
+  if (ytPolling) { clearTimeout(ytPolling); ytPolling = null; }
+  const { interval } = await fetchYTMessages();
+  if (!ytIsPaused) {
+    ytPolling = setTimeout(pollYTApi, interval);
+  }
+}
+
+async function fetchYTMessages() {
+  try {
+    let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${ytConfig.liveChatId}&part=snippet,authorDetails&maxResults=50&key=${ytConfig.apiKey}`;
+    if (ytNextPageToken) url += `&pageToken=${ytNextPageToken}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) {
+      console.log('[yt-chat] Erro API:', data.error.message);
+      return { interval: 20000 };
+    }
+
+    ytNextPageToken = data.nextPageToken;
+    let interval = data.pollingIntervalMillis || 20000;
+    // OTIMIZAÇÃO DE CUSTO DA API: Força no mínimo 20 segundos de intervalo
+    interval = Math.max(interval, 20000); 
+
+    if (data.items && data.items.length > 0) {
+      const newMessages = data.items.map(item => ({
+        id: item.id,
+        author: item.authorDetails.displayName,
+        message: item.snippet.displayMessage,
+        timestamp: new Date(item.snippet.publishedAt).toLocaleTimeString(),
+        profileImageUrl: item.authorDetails.profileImageUrl,
+        isOwner: item.authorDetails.isChatOwner
+      }));
+
+      lastYtMessages = [...newMessages, ...lastYtMessages].slice(0, 50);
+      io.emit('yt-chat-messages', newMessages);
+    }
+    return { interval };
+  } catch (err) {
+    console.log('[yt-chat] Erro request:', err.message);
+    return { interval: 20000 };
+  }
+}
+
+async function pollYTApi() {
+  if (ytIsPaused || !ytIsConnected) return;
+  
+  const { interval } = await fetchYTMessages();
+  
+  if (!ytIsPaused && ytIsConnected) {
+    ytPolling = setTimeout(pollYTApi, interval);
+  }
+}
+
+// Inicia a primeira vez
 function startYTPolling(apiKey, liveChatId) {
   stopYTPolling();
   if (!apiKey || !liveChatId) {
@@ -721,54 +815,11 @@ function startYTPolling(apiKey, liveChatId) {
     return;
   }
   ytConfig = { apiKey, liveChatId };
-  console.log(`[yt-chat] Iniciando polling...`);
-
-  let nextPageToken = null;
-  let pollInterval = 5000;
-
-  async function poll() {
-    try {
-      let url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&maxResults=50&key=${apiKey}`;
-      if (nextPageToken) url += `&pageToken=${nextPageToken}`;
-
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (data.error) {
-        console.log('[yt-chat] Erro API:', data.error.message);
-        ytPolling = setTimeout(poll, pollInterval);
-        return;
-      }
-
-      nextPageToken = data.nextPageToken;
-      pollInterval = data.pollingIntervalMillis || 5000;
-
-      if (data.items && data.items.length > 0) {
-        const newMessages = data.items.map(item => ({
-          id: item.id,
-          author: item.authorDetails.displayName,
-          message: item.snippet.displayMessage,
-          timestamp: new Date(item.snippet.publishedAt).toLocaleTimeString(),
-          profileImageUrl: item.authorDetails.profileImageUrl,
-          isOwner: item.authorDetails.isChatOwner
-        }));
-
-        lastYtMessages = [...newMessages, ...lastYtMessages].slice(0, 50);
-        io.emit('yt-chat-messages', newMessages);
-      }
-    } catch (err) {
-      console.log('[yt-chat] Erro polling:', err.message);
-    }
-    ytPolling = setTimeout(poll, pollInterval);
-  }
-
-  // Primeira chamada
-  poll();
-}
-
-function stopYTPolling() {
-  if (ytPolling) { clearTimeout(ytPolling); ytPolling = null; }
-  console.log('[yt-chat] Polling parado');
+  ytNextPageToken = null;
+  ytIsPaused = false;
+  ytIsConnected = true;
+  console.log(`[yt-chat] Iniciando polling com intervalo forçado mínimo de 20s...`);
+  pollYTApi();
 }
 
 // ============================================
