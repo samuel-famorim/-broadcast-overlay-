@@ -138,6 +138,191 @@ function getDefaultPresets(type) {
         rightName: 'NOME DA PESSOA',
         rightRole: 'CARGO / FUNÇÃO',
         colors: { ...ufuColors }
+      },
+      // --- Patrocinadores & Convidados Especiais ---
+      {
+        label: 'BTG - Larissa Nunes & Vinícius Lettieri',
+        leftName: 'Larissa Nunes',
+        leftRole: 'BTG • Analista de Recursos Humanos',
+        rightName: 'Vinícius Lettieri',
+        rightRole: 'BTG • Associate Director de Portfolio Intelligence',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'BTG - Larissa Nunes',
+        leftName: 'Larissa Nunes',
+        leftRole: 'BTG • Analista de Recursos Humanos',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'BTG - Vinícius Lettieri',
+        leftName: 'Vinícius Lettieri',
+        leftRole: 'BTG • Associate Director de Portfolio Intelligence',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Incognia - Felipe Lemler & Éden Ernandes',
+        leftName: 'Felipe Lemler',
+        leftRole: 'Incognia • Global Talent Acquisition Leader',
+        rightName: 'Éden Ernandes',
+        rightRole: 'Incognia • Integration Management Leader',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Incognia - Felipe Lemler',
+        leftName: 'Felipe Lemler',
+        leftRole: 'Incognia • Global Talent Acquisition Leader',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Incognia - Éden Ernandes',
+        leftName: 'Éden Ernandes',
+        leftRole: 'Incognia • Integration Management Leader',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Nubank - Alexandre Araújo',
+        leftName: 'Alexandre Araújo',
+        leftRole: 'Nubank • Global Talent Lead',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Organização Local - Luiz Cláudio & Rafael',
+        leftName: 'Luiz Cláudio',
+        leftRole: 'Organização Local • FACOM UFU',
+        rightName: 'Rafael',
+        rightRole: 'Organização Local • FACOM UFU',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Organização Local - Rafael & Ronaldo',
+        leftName: 'Rafael',
+        leftRole: 'Organização Local • FACOM UFU',
+        rightName: 'Ronaldo',
+        rightRole: 'Organização Local • FACOM UFU',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Organização Local - Luiz Cláudio',
+        leftName: 'Luiz Cláudio',
+        leftRole: 'Organização Local • FACOM UFU',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Organização Local - Rafael',
+        leftName: 'Rafael',
+        leftRole: 'Organização Local • FACOM UFU',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Organização Local - Ronaldo',
+        leftName: 'Ronaldo',
+        leftRole: 'Organização Local • FACOM UFU',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'PAX - Phyllipe Medeiros',
+        leftName: 'Phyllipe Medeiros',
+        leftRole: 'PAX • CTO e Co-founder',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Rivio - Mariana Sartorato & Pedro Orii',
+        leftName: 'Mariana Sartorato Jorge',
+        leftRole: 'Rivio • Engenheira de Software',
+        rightName: 'Pedro Orii Antonacio',
+        rightRole: 'Rivio • AI Engineer',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Rivio - Mariana Sartorato Jorge',
+        leftName: 'Mariana Sartorato Jorge',
+        leftRole: 'Rivio • Engenheira de Software',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Rivio - Pedro Orii Antonacio',
+        leftName: 'Pedro Orii Antonacio',
+        leftRole: 'Rivio • AI Engineer',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'VTEX - Laelio Ronconi & Julia Campos',
+        leftName: 'Laelio Ronconi',
+        leftRole: 'VTEX • Representante de RH',
+        rightName: 'Julia Campos',
+        rightRole: 'VTEX • Representante de Engenharia',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'VTEX - Laelio Ronconi',
+        leftName: 'Laelio Ronconi',
+        leftRole: 'VTEX • Representante de RH',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'VTEX - Julia Campos',
+        leftName: 'Julia Campos',
+        leftRole: 'VTEX • Representante de Engenharia',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Novos Projetos - Thailsson & Samuel Neves',
+        leftName: 'Thailsson',
+        leftRole: 'Revista & Hub • UFAM',
+        rightName: 'Samuel Neves',
+        rightRole: 'Revista & Hub • Unicamp',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Novos Projetos - Thailsson (UFAM)',
+        leftName: 'Thailsson',
+        leftRole: 'Revista & Hub • UFAM',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Novos Projetos - Samuel Neves (Unicamp)',
+        leftName: 'Samuel Neves',
+        leftRole: 'Revista & Hub • Unicamp',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
+      },
+      {
+        label: 'Stone - Fernanda Alfonso Fonseca',
+        leftName: 'Fernanda Alfonso Fonseca',
+        leftRole: 'Stone • Senior Engineering Manager',
+        rightName: '',
+        rightRole: '',
+        colors: { ...ufuColors }
       }
     ];
   }
