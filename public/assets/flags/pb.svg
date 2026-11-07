@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 70">
+    <rect width="35" height="70" fill="#000000"/>
+    <rect x="35" width="65" height="70" fill="#e21c21"/>
+    <text x="67" y="42" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">NEGO</text>
+  </svg>

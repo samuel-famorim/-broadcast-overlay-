@@ -40,7 +40,16 @@
           <h2>🏅 Medalhas</h2>
           <div class="input-group">
             <label>Nome do Time</label>
-            <input type="text" id="medal-team" placeholder="Ex: Time Binary Brains" maxlength="30">
+            <div class="team-quick-bar">
+              <div class="team-quick-bar-row">
+                <input type="text" class="team-quick-search-input" placeholder="🔍 Buscar time (A-Z)..." oninput="onQuickTeamSearch('medal', this.value)">
+                <select id="quick-select-medal" class="team-quick-select" onchange="onQuickSelectTeam('medal', this.value)">
+                  <option value="">-- Times (65) --</option>
+                </select>
+              </div>
+              <div id="quick-results-medal" class="team-quick-results" style="display:none;"></div>
+            </div>
+            <input type="text" id="medal-team" placeholder="Ex: Time Binary Brains" maxlength="35" list="teams-datalist">
           </div>
           <div class="input-row">
             <div class="input-group">
@@ -71,7 +80,16 @@
           <section class="panel balloon-panel" style="border-radius:0 0 12px 12px;margin-top:-1px;">
           <div class="input-group">
             <label>Nome do Time</label>
-            <input type="text" id="balloon-team" placeholder="Ex: Code Masters" maxlength="20">
+            <div class="team-quick-bar">
+              <div class="team-quick-bar-row">
+                <input type="text" class="team-quick-search-input" placeholder="🔍 Buscar time (A-Z)..." oninput="onQuickTeamSearch('balloon', this.value)">
+                <select id="quick-select-balloon" class="team-quick-select" onchange="onQuickSelectTeam('balloon', this.value)">
+                  <option value="">-- Times (65) --</option>
+                </select>
+              </div>
+              <div id="quick-results-balloon" class="team-quick-results" style="display:none;"></div>
+            </div>
+            <input type="text" id="balloon-team" placeholder="Ex: Code Masters" maxlength="30" list="teams-datalist">
           </div>
           <div class="input-group">
             <label>Cor do Balão</label>
@@ -103,10 +121,19 @@
             <button class="btn btn-event btn-blind" onclick="triggerBlind()">👁️ Modo Cego</button>
           </div>
           <div class="rankup-section">
+            <div class="team-quick-bar">
+              <div class="team-quick-bar-row">
+                <input type="text" class="team-quick-search-input" placeholder="🔍 Buscar time (A-Z)..." oninput="onQuickTeamSearch('rankup', this.value)">
+                <select id="quick-select-rankup" class="team-quick-select" onchange="onQuickSelectTeam('rankup', this.value)">
+                  <option value="">-- Times (65) --</option>
+                </select>
+              </div>
+              <div id="quick-results-rankup" class="team-quick-results" style="display:none;"></div>
+            </div>
             <div class="input-row">
               <div class="input-group">
                 <label>Time</label>
-                <input type="text" id="rankup-team" placeholder="Nome do time" maxlength="25">
+                <input type="text" id="rankup-team" placeholder="Nome do time" maxlength="30" list="teams-datalist">
               </div>
               <div class="input-group">
                 <label>Posição</label>
@@ -331,6 +358,27 @@
 
           <!-- Tab: Time -->
           <div class="tab-content" id="tab-time">
+            <!-- Seletor e Pesquisa de Equipes da Maratona -->
+            <div style="background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+              <label style="font-weight: 700; color: var(--neon-cyan); display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span>📋 Catálogo de Equipes Salvas (65 Times)</span>
+                <span id="teams-count-badge" style="font-size: 11px; background: rgba(0,229,255,0.2); padding: 2px 8px; border-radius: 10px; color: #fff;">A-Z</span>
+              </label>
+              
+              <div class="input-group" style="margin-bottom: 8px;">
+                <input type="text" id="team-search-input" placeholder="🔍 Pesquisar por time, integrante, universidade ou estado..." oninput="onTeamSearchInput(this.value)">
+              </div>
+
+              <div class="input-group" style="margin-bottom: 0;">
+                <select id="team-catalog-select" onchange="onSelectTeamFromCatalog(this.value)" style="font-weight: 600;">
+                  <option value="">-- Selecione uma equipe salva (A-Z) --</option>
+                </select>
+              </div>
+
+              <div id="team-search-results" style="display:none; max-height: 140px; overflow-y: auto; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">
+              </div>
+            </div>
+
             <div class="preset-row">
               <select id="preset-time" onchange="loadPreset('time')">
                 <option value="">-- Preset --</option>
@@ -339,26 +387,50 @@
               <button class="btn-mini btn-mini-del" onclick="deletePreset('time')">🗑</button>
             </div>
 
-            <div class="toggle-row">
-              <span class="toggle-label">Ativo</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="team-lt-toggle" onchange="toggleTeamLT(this.checked)">
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
             <div class="input-group">
               <label>Nome do Time</label>
-              <input type="text" id="team-lt-name" placeholder="Ex: Binary Brains" maxlength="30">
+              <input type="text" id="team-lt-name" placeholder="Ex: Binary Brains" maxlength="35" list="teams-datalist">
             </div>
+
+            <div class="input-row input-row-2">
+              <div class="input-group">
+                <label>Universidade / Instituição</label>
+                <input type="text" id="team-university" placeholder="Ex: UFU / USP" maxlength="40">
+              </div>
+              <div class="input-group" style="max-width: 110px;">
+                <label>Estado (UF)</label>
+                <input type="text" id="team-state" placeholder="MG" maxlength="2" style="text-transform: uppercase;">
+              </div>
+            </div>
+
             <div class="input-row input-row-3">
-              <div class="input-group"><label>Integrante 1</label><input type="text" id="team-lt-m1" placeholder="João Silva" maxlength="25"></div>
-              <div class="input-group"><label>Integrante 2</label><input type="text" id="team-lt-m2" placeholder="Maria Costa" maxlength="25"></div>
-              <div class="input-group"><label>Integrante 3</label><input type="text" id="team-lt-m3" placeholder="Pedro Santos" maxlength="25"></div>
+              <div class="input-group"><label>Integrante 1</label><input type="text" id="team-lt-m1" placeholder="Primeiro e Último nome" maxlength="25"></div>
+              <div class="input-group"><label>Integrante 2</label><input type="text" id="team-lt-m2" placeholder="Primeiro e Último nome" maxlength="25"></div>
+              <div class="input-group"><label>Integrante 3</label><input type="text" id="team-lt-m3" placeholder="Primeiro e Último nome" maxlength="25"></div>
+            </div>
+
+            <div class="input-row input-row-2" style="margin-top: 10px;">
+              <div class="input-group">
+                <label>Tempo do Card no Display</label>
+                <select id="team-card-duration">
+                  <option value="0">Manual (até clicar em Ocultar)</option>
+                  <option value="8">8 segundos</option>
+                  <option value="12" selected>12 segundos (Recomendado)</option>
+                  <option value="15">15 segundos</option>
+                  <option value="20">20 segundos</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Status na Tela</label>
+                <div style="display: flex; gap: 8px; align-items: center; height: 38px;">
+                  <span class="status-indicator" id="status-team-card" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #222; color: #888;">Card: Off</span>
+                  <span class="status-indicator" id="status-team-lt" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #222; color: #888;">Barra: Off</span>
+                </div>
+              </div>
             </div>
 
             <details class="lt-colors-details">
-              <summary>Cores específicas (override)</summary>
+              <summary>Cores específicas e Logo (override)</summary>
               <div class="input-row input-row-3" style="margin-top:8px;">
                 <div class="input-group"><label>Barra Superior</label><input type="color" id="team-lt-top-bg" value="#0066FF"></div>
                 <div class="input-group"><label>Barra Inferior</label><input type="color" id="team-lt-bottom-bg" value="#FFD700"></div>
@@ -371,7 +443,11 @@
               </div>
             </details>
 
-            <button class="btn btn-sports" onclick="applyTeamLT()">🔄 Aplicar / Atualizar</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px;">
+              <button class="btn btn-primary" onclick="applyTeamCard()" title="Exibe o Card central de destaque da equipe">🎯 Exibir Card</button>
+              <button class="btn btn-sports" onclick="applyTeamLT()" title="Exibe a barra horizontal no rodapé">📺 Exibir Barra</button>
+              <button class="btn btn-emergency" onclick="hideActiveTeam()" title="Oculta o card e a barra da equipe">🛑 Ocultar</button>
+            </div>
           </div>
 
           <!-- Tab: Barra Esportiva -->
@@ -534,10 +610,19 @@
                 <option value="">-- Selecione --</option>
               </select>
             </div>
+            <div class="team-quick-bar">
+              <div class="team-quick-bar-row">
+                <input type="text" class="team-quick-search-input" placeholder="🔍 Buscar time para First AC..." oninput="onQuickTeamSearch('firstac', this.value)">
+                <select id="quick-select-firstac" class="team-quick-select" onchange="onQuickSelectTeam('firstac', this.value)">
+                  <option value="">-- Times (65) --</option>
+                </select>
+              </div>
+              <div id="quick-results-firstac" class="team-quick-results" style="display:none;"></div>
+            </div>
             <div class="input-row">
               <div class="input-group">
                 <label>Nome do Time</label>
-                <input type="text" id="firstac-team" placeholder="Binary Brains" maxlength="25">
+                <input type="text" id="firstac-team" placeholder="Binary Brains" maxlength="30" list="teams-datalist">
               </div>
               <div class="input-group">
                 <label>Universidade</label>
@@ -664,7 +749,11 @@
     </div>
   </div>
 
+  <!-- Datalist global para autocompletar nomes de equipes em qualquer campo -->
+  <datalist id="teams-datalist"></datalist>
+
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/teamsData.js"></script>
   <script src="/js/control.js"></script>
 </body>
 </html>

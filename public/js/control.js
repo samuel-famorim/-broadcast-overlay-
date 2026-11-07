@@ -53,7 +53,7 @@ const SYNCED_INPUT_IDS = [
   'lt-left-name', 'lt-left-role', 'lt-right-name', 'lt-right-role',
   'lt-top-bg', 'lt-bottom-bg', 'lt-logo-bg', 'lt-name-color', 'lt-role-color',
   'lt-geo1', 'lt-geo2', 'lt-logo-url',
-  'team-lt-name', 'team-lt-m1', 'team-lt-m2', 'team-lt-m3',
+  'team-lt-name', 'team-university', 'team-state', 'team-lt-m1', 'team-lt-m2', 'team-lt-m3',
   'team-lt-top-bg', 'team-lt-bottom-bg', 'team-lt-logo-bg',
   'team-lt-name-color', 'team-lt-members-color', 'team-lt-logo',
   'sports-title', 'sports-subtitle',
@@ -115,6 +115,36 @@ function syncActiveOverlaysUI(overlays) {
   setToggleState('medaltable-toggle', 'medal-table', !!overlays.medalTable);
   setToggleState('problemstats-toggle', 'problem-stats', !!overlays.problemStats);
   setToggleState('comment-display-toggle', 'comment-display', !!overlays.comment);
+
+  const cardStatus = document.getElementById('status-team-card');
+  if (cardStatus) {
+    if (overlays.teamCard) {
+      cardStatus.textContent = 'Card: ON';
+      cardStatus.style.background = 'rgba(0, 229, 255, 0.2)';
+      cardStatus.style.color = '#00e5ff';
+      cardStatus.style.border = '1px solid #00e5ff';
+    } else {
+      cardStatus.textContent = 'Card: Off';
+      cardStatus.style.background = '#222';
+      cardStatus.style.color = '#888';
+      cardStatus.style.border = '1px solid transparent';
+    }
+  }
+
+  const ltStatus = document.getElementById('status-team-lt');
+  if (ltStatus) {
+    if (overlays.teamLt) {
+      ltStatus.textContent = 'Barra: ON';
+      ltStatus.style.background = 'rgba(0, 255, 136, 0.2)';
+      ltStatus.style.color = '#00ff88';
+      ltStatus.style.border = '1px solid #00ff88';
+    } else {
+      ltStatus.textContent = 'Barra: Off';
+      ltStatus.style.background = '#222';
+      ltStatus.style.color = '#888';
+      ltStatus.style.border = '1px solid transparent';
+    }
+  }
 
   scoreboardVisible = !!overlays.scoreboard;
   const sbBtn = document.querySelector('#tab-firstac .btn-scoreboard');
@@ -460,6 +490,8 @@ function savePreset(type) {
     };
   } else if (type === 'time') {
     data.teamName = document.getElementById('team-lt-name').value.trim();
+    data.university = document.getElementById('team-university')?.value.trim() || '';
+    data.state = document.getElementById('team-state')?.value.trim() || '';
     data.m1 = document.getElementById('team-lt-m1').value.trim();
     data.m2 = document.getElementById('team-lt-m2').value.trim();
     data.m3 = document.getElementById('team-lt-m3').value.trim();
@@ -526,6 +558,8 @@ function loadPreset(type, silent = false) {
       topText:'', bottomText:'' });
   } else if (type === 'time') {
     setVal('team-lt-name', p.teamName || '');
+    setVal('team-university', p.university || '');
+    setVal('team-state', p.state || '');
     const fallbackMembers = (!p.m1 && !p.m2 && !p.m3 && p.teamMembers)
       ? p.teamMembers.split(',').map(s => s.trim())
       : [];
@@ -723,16 +757,341 @@ function applyBothLTs() {
 }
 
 // ============================================
-// LT DE COMPETIDORES (Time)
+// LT DE COMPETIDORES (Time) & APRESENTAÇÃO DE EQUIPES
 // ============================================
+
+function initTeamCatalog() {
+  const teams = (typeof MARATHON_TEAMS !== 'undefined' && Array.isArray(MARATHON_TEAMS)) 
+    ? MARATHON_TEAMS 
+    : [];
+
+  // 1. Datalist global para autocomplete nativo em todos os inputs de time
+  const datalist = document.getElementById('teams-datalist');
+  if (datalist) {
+    datalist.innerHTML = '';
+    teams.forEach((team) => {
+      const opt = document.createElement('option');
+      opt.value = team.name;
+      opt.label = `${team.university} (${team.state})`;
+      datalist.appendChild(opt);
+    });
+  }
+
+  // 2. Select principal do catálogo na aba Time
+  const select = document.getElementById('team-catalog-select');
+  if (select) {
+    const badge = document.getElementById('teams-count-badge');
+    if (badge) badge.textContent = `${teams.length} Times`;
+
+    select.innerHTML = '<option value="">-- Selecione uma equipe salva (A-Z) --</option>';
+    teams.forEach((team, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${team.name} (${team.university} - ${team.state})`;
+      select.appendChild(opt);
+    });
+  }
+
+  // 3. Dropdowns de seleção rápida em todos os outros painéis (Medalhas, Balão, RankUp, First AC)
+  const quickTargets = ['medal', 'balloon', 'rankup', 'firstac'];
+  quickTargets.forEach(prefix => {
+    const qSelect = document.getElementById(`quick-select-${prefix}`);
+    if (qSelect) {
+      qSelect.innerHTML = `<option value="">-- Times (${teams.length}) --</option>`;
+      teams.forEach((team, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${team.name} (${team.university} - ${team.state})`;
+        qSelect.appendChild(opt);
+      });
+    }
+  });
+
+  // 4. Vincular listeners inteligentes nos inputs
+  bindSmartTeamInputs();
+}
+
+function bindSmartTeamInputs() {
+  // Preenchimento inteligente ao digitar ou autocompletar em #firstac-team
+  const firstAcInput = document.getElementById('firstac-team');
+  if (firstAcInput && !firstAcInput.dataset.boundTeamSmart) {
+    firstAcInput.dataset.boundTeamSmart = 'true';
+    const handler = () => {
+      const val = firstAcInput.value.trim().toLowerCase();
+      if (!val || typeof MARATHON_TEAMS === 'undefined') return;
+      const found = MARATHON_TEAMS.find(t => t.name.toLowerCase() === val);
+      if (found) {
+        setVal('firstac-university', found.university);
+        sharedState.inputs['firstac-university'] = found.university;
+        socket.emit('input-change', { id: 'firstac-university', value: found.university });
+      }
+    };
+    firstAcInput.addEventListener('change', handler);
+  }
+
+  // Preenchimento inteligente ao digitar ou autocompletar em #team-lt-name
+  const teamLtInput = document.getElementById('team-lt-name');
+  if (teamLtInput && !teamLtInput.dataset.boundTeamSmart) {
+    teamLtInput.dataset.boundTeamSmart = 'true';
+    const handler = () => {
+      const val = teamLtInput.value.trim().toLowerCase();
+      if (!val || typeof MARATHON_TEAMS === 'undefined') return;
+      const idx = MARATHON_TEAMS.findIndex(t => t.name.toLowerCase() === val);
+      if (idx !== -1) {
+        onSelectTeamFromCatalog(idx);
+      }
+    };
+    teamLtInput.addEventListener('change', handler);
+  }
+}
+
+function onQuickSelectTeam(prefix, teamIndex) {
+  if (teamIndex === '' || teamIndex === undefined || teamIndex === null) return;
+  const idx = parseInt(teamIndex, 10);
+  if (isNaN(idx) || typeof MARATHON_TEAMS === 'undefined' || !MARATHON_TEAMS[idx]) return;
+
+  const team = MARATHON_TEAMS[idx];
+  let targetInputId = '';
+
+  if (prefix === 'medal') targetInputId = 'medal-team';
+  else if (prefix === 'balloon') targetInputId = 'balloon-team';
+  else if (prefix === 'rankup') targetInputId = 'rankup-team';
+  else if (prefix === 'firstac') {
+    targetInputId = 'firstac-team';
+    setVal('firstac-university', team.university);
+    sharedState.inputs['firstac-university'] = team.university;
+    socket.emit('input-change', { id: 'firstac-university', value: team.university });
+  }
+
+  if (targetInputId) {
+    setVal(targetInputId, team.name);
+    sharedState.inputs[targetInputId] = team.name;
+    socket.emit('input-change', { id: targetInputId, value: team.name });
+  }
+
+  const resContainer = document.getElementById(`quick-results-${prefix}`);
+  if (resContainer) resContainer.style.display = 'none';
+
+  const qSelect = document.getElementById(`quick-select-${prefix}`);
+  if (qSelect) qSelect.value = String(idx);
+
+  toast(`📋 Time selecionado: ${team.name}`, 'info');
+}
+
+function onQuickTeamSearch(prefix, query) {
+  const qSelect = document.getElementById(`quick-select-${prefix}`);
+  const resContainer = document.getElementById(`quick-results-${prefix}`);
+  if (typeof MARATHON_TEAMS === 'undefined') return;
+
+  const q = (query || '').trim();
+  if (!q) {
+    if (resContainer) resContainer.style.display = 'none';
+    if (qSelect) {
+      qSelect.innerHTML = `<option value="">-- Times (${MARATHON_TEAMS.length}) --</option>`;
+      MARATHON_TEAMS.forEach((team, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = `${team.name} (${team.university} - ${team.state})`;
+        qSelect.appendChild(opt);
+      });
+    }
+    return;
+  }
+
+  const norm = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const qNorm = norm(q);
+
+  const matches = [];
+  MARATHON_TEAMS.forEach((team, idx) => {
+    const teamNameNorm = norm(team.name);
+    const uniNorm = norm(team.university);
+    const stateNorm = norm(team.state);
+    const membersNorm = (team.members || []).map(norm).join(' ') + ' ' + (team.fullMembers || []).map(norm).join(' ');
+
+    if (
+      teamNameNorm.includes(qNorm) ||
+      uniNorm.includes(qNorm) ||
+      stateNorm.includes(qNorm) ||
+      membersNorm.includes(qNorm)
+    ) {
+      matches.push({ team, idx });
+    }
+  });
+
+  if (qSelect) {
+    qSelect.innerHTML = `<option value="">-- ${matches.length} time(s) --</option>`;
+    matches.forEach(({ team, idx }) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${team.name} (${team.university} - ${team.state})`;
+      qSelect.appendChild(opt);
+    });
+    if (matches.length === 1) {
+      qSelect.value = matches[0].idx;
+    }
+  }
+
+  if (resContainer) {
+    if (matches.length === 0) {
+      resContainer.style.display = 'block';
+      resContainer.innerHTML = '<div style="color:#aaa; padding: 6px 4px; font-size: 12px;">Nenhum time encontrado.</div>';
+    } else {
+      resContainer.style.display = 'block';
+      resContainer.innerHTML = matches.slice(0, 8).map(({ team, idx }) => `
+        <div onclick="onQuickSelectTeam('${prefix}', ${idx})" style="padding: 8px 12px; margin-bottom: 5px; background: rgba(255,255,255,0.06); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: background 0.15s;" onmouseover="this.style.background='rgba(0,229,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+          <strong style="color: var(--neon-cyan); font-size: 13px;">${escapeHtml(team.name)}</strong>
+          <span style="color: #bbb; font-size: 11px;">${escapeHtml(team.university)} (${team.state})</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function onSelectTeamFromCatalog(teamIndex) {
+  if (teamIndex === '' || teamIndex === undefined || teamIndex === null) return;
+  const idx = parseInt(teamIndex, 10);
+  if (isNaN(idx) || typeof MARATHON_TEAMS === 'undefined' || !MARATHON_TEAMS[idx]) return;
+
+  const team = MARATHON_TEAMS[idx];
+  setVal('team-lt-name', team.name);
+  setVal('team-university', team.university);
+  setVal('team-state', team.state);
+
+  const m = team.members || [];
+  setVal('team-lt-m1', m[0] || '');
+  setVal('team-lt-m2', m[1] || '');
+  setVal('team-lt-m3', m[2] || '');
+
+  ['team-lt-name', 'team-university', 'team-state', 'team-lt-m1', 'team-lt-m2', 'team-lt-m3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      sharedState.inputs[id] = el.value;
+      socket.emit('input-change', { id, value: el.value });
+    }
+  });
+
+  const select = document.getElementById('team-catalog-select');
+  if (select && select.value !== String(idx)) {
+    select.value = idx;
+  }
+
+  toast(`📋 Carregado: ${team.name} (${team.university} - ${team.state})`, 'info');
+}
+
+function onTeamSearchInput(query) {
+  const resultsContainer = document.getElementById('team-search-results');
+  const select = document.getElementById('team-catalog-select');
+  if (typeof MARATHON_TEAMS === 'undefined') return;
+
+  const q = (query || '').trim();
+  if (!q) {
+    if (resultsContainer) resultsContainer.style.display = 'none';
+    initTeamCatalog();
+    return;
+  }
+
+  const norm = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const qNorm = norm(q);
+
+  const matches = [];
+  MARATHON_TEAMS.forEach((team, idx) => {
+    const teamNameNorm = norm(team.name);
+    const uniNorm = norm(team.university);
+    const stateNorm = norm(team.state);
+    const membersNorm = (team.members || []).map(norm).join(' ') + ' ' + (team.fullMembers || []).map(norm).join(' ');
+
+    if (
+      teamNameNorm.includes(qNorm) ||
+      uniNorm.includes(qNorm) ||
+      stateNorm.includes(qNorm) ||
+      membersNorm.includes(qNorm)
+    ) {
+      matches.push({ team, idx });
+    }
+  });
+
+  if (select) {
+    select.innerHTML = `<option value="">-- ${matches.length} time(s) encontrado(s) --</option>`;
+    matches.forEach(({ team, idx }) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${team.name} (${team.university} - ${team.state})`;
+      select.appendChild(opt);
+    });
+  }
+
+  if (resultsContainer) {
+    if (matches.length === 0) {
+      resultsContainer.style.display = 'block';
+      resultsContainer.innerHTML = '<div style="font-size:12px; color:#aaa; padding:4px;">Nenhuma equipe encontrada para a busca.</div>';
+    } else {
+      resultsContainer.style.display = 'block';
+      resultsContainer.innerHTML = matches.slice(0, 10).map(({ team, idx }) => `
+        <div onclick="onSelectTeamFromCatalog(${idx})" style="padding: 6px 8px; margin-bottom: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 12px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,229,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+          <div>
+            <strong style="color: var(--neon-cyan);">${team.name}</strong>
+            <span style="color: #bbb; margin-left: 6px;">${team.university} (${team.state})</span>
+          </div>
+          <span style="font-size: 11px; color: #888;">${(team.members || []).join(' • ')}</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function applyTeamCard() {
+  const teamName = document.getElementById('team-lt-name').value.trim();
+  if (!teamName) {
+    toast('Selecione ou digite o nome da equipe!', 'error');
+    return false;
+  }
+  const university = document.getElementById('team-university')?.value.trim() || '';
+  const state = (document.getElementById('team-state')?.value.trim() || '').toUpperCase();
+  const m1 = document.getElementById('team-lt-m1').value.trim();
+  const m2 = document.getElementById('team-lt-m2').value.trim();
+  const m3 = document.getElementById('team-lt-m3').value.trim();
+  const duration = parseInt(document.getElementById('team-card-duration')?.value, 10) || 0;
+  
+  const customLogo = document.getElementById('team-lt-logo')?.value.trim();
+  const globalLogo = document.getElementById('global-logo-url')?.value.trim();
+  const resolvedLogo = (customLogo && customLogo !== '/src/sbc_assets/logo-maratona.png')
+    ? customLogo
+    : ((globalLogo && globalLogo !== '/src/sbc_assets/logo-maratona.png') ? globalLogo : '/src/sbc_assets/sabia-voando.png');
+
+  socket.emit('trigger-team-card', {
+    teamName,
+    university,
+    state,
+    m1,
+    m2,
+    m3,
+    duration,
+    logoUrl: resolvedLogo
+  });
+
+  toast('🎯 Card exibido: ' + teamName, 'success');
+  return true;
+}
+
+function hideActiveTeam() {
+  socket.emit('trigger-team-card-hide');
+  socket.emit('trigger-team-lt-hide');
+  const toggle = document.getElementById('team-lt-toggle');
+  if (toggle) toggle.checked = false;
+  setLiveIndicator('team-lt', false);
+  toast('🛑 Equipe ocultada da tela', 'success');
+}
 
 function applyTeamLT() {
   const teamName = document.getElementById('team-lt-name').value.trim();
   if (!teamName) {
-    document.getElementById('team-lt-toggle').checked = false;
+    const toggle = document.getElementById('team-lt-toggle');
+    if (toggle) toggle.checked = false;
     toast('Digite o nome do time!', 'error');
     return false;
   }
+  const university = document.getElementById('team-university')?.value.trim() || '';
+  const state = (document.getElementById('team-state')?.value.trim() || '').toUpperCase();
   const customLogo = document.getElementById('team-lt-logo').value.trim();
   const globalLogo = document.getElementById('global-logo-url').value.trim();
   const resolvedLogo = (customLogo && customLogo !== '/src/sbc_assets/logo-maratona.png')
@@ -746,13 +1105,16 @@ function applyTeamLT() {
     nameColor: document.getElementById('team-lt-name-color').value,
     membersColor: document.getElementById('team-lt-members-color').value,
     geoColor1: '#FF1493', geoColor2: '#FFD700',
-    logoUrl: resolvedLogo
+    logoUrl: resolvedLogo,
+    university,
+    state
   };
   const m1 = document.getElementById('team-lt-m1').value.trim();
   const m2 = document.getElementById('team-lt-m2').value.trim();
   const m3 = document.getElementById('team-lt-m3').value.trim();
-  socket.emit('trigger-team-lt', { teamName, m1, m2, m3, options });
-  document.getElementById('team-lt-toggle').checked = true;
+  socket.emit('trigger-team-lt', { teamName, m1, m2, m3, options, university, state });
+  const toggle = document.getElementById('team-lt-toggle');
+  if (toggle) toggle.checked = true;
   setLiveIndicator('team-lt', true);
   toast('👥 ' + teamName, 'success');
   return true;
@@ -1673,4 +2035,10 @@ function toast(message, type) {
 window.addEventListener('DOMContentLoaded', () => {
   bindSyncedInputs();
   injectLiveDots();
+  initTeamCatalog();
 });
+
+// Inicialização imediata caso o script rode após o DOMContentLoaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initTeamCatalog();
+}

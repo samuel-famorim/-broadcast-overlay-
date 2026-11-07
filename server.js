@@ -290,6 +290,7 @@ function createDefaultState() {
       ltLeft: null,
       ltRight: null,
       teamLt: null,
+      teamCard: null,
       sportsLt: null,
       sponsorsLt: null,
       problemLt: null,
@@ -612,6 +613,22 @@ io.on('connection', (socket) => {
     appState.activeOverlays.teamLt = null;
     scheduleSave();
     io.emit('hide-team-lt');
+    io.emit('overlays-updated', appState.activeOverlays);
+  });
+
+  socket.on('trigger-team-card', (data) => {
+    console.log(`[team-card] ${data.teamName}`);
+    appState.activeOverlays.teamCard = data;
+    scheduleSave();
+    io.emit('show-team-card', data);
+    io.emit('overlays-updated', appState.activeOverlays);
+  });
+
+  socket.on('trigger-team-card-hide', () => {
+    console.log('[team-card] hide');
+    appState.activeOverlays.teamCard = null;
+    scheduleSave();
+    io.emit('hide-team-card');
     io.emit('overlays-updated', appState.activeOverlays);
   });
 

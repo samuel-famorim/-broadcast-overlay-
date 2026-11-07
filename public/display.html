@@ -193,9 +193,56 @@
         <div class="team-lt-text-block">
           <div class="team-lt-bar-top">
             <span class="team-lt-name"></span>
+            <span class="team-lt-uni-badge" style="display:none;"></span>
           </div>
           <div class="team-lt-bar-bottom">
             <span class="team-lt-members"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card de Apresentação de Equipe (Hero Card) -->
+    <div id="team-card" class="overlay hidden">
+      <div class="team-card-container">
+        <div class="team-card-deco-line-top"></div>
+        <div class="team-card-deco-line-bottom"></div>
+
+        <div class="team-card-header">
+          <div class="team-card-badge-category">
+            <span class="team-card-category-dot"></span>
+            <span class="team-card-category-text">EQUIPE COMPETIDORA</span>
+          </div>
+          <div class="team-card-state-pill" id="team-card-state-pill">
+            <img class="team-card-state-flag" id="team-card-state-flag" src="/assets/flags/br.svg" alt="Bandeira do Estado">
+            <span class="team-card-state-uf" id="team-card-state-uf">MG</span>
+          </div>
+        </div>
+
+        <div class="team-card-body">
+          <div class="team-card-logo-wrap">
+            <img class="team-card-logo-img" id="team-card-logo" src="/src/sbc_assets/sabia-voando.png" alt="Logo">
+          </div>
+          <div class="team-card-main-info">
+            <h2 class="team-card-name" id="team-card-name">NOME DA EQUIPE</h2>
+            <div class="team-card-university-wrap">
+              <span class="team-card-university" id="team-card-university">Universidade Federal</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="team-card-members-section">
+          <div class="team-card-members-title">INTEGRANTES</div>
+          <div class="team-card-members-grid">
+            <div class="team-card-member-chip" id="team-card-m1-chip">
+              <span class="team-card-member-name" id="team-card-m1">Integrante 1</span>
+            </div>
+            <div class="team-card-member-chip" id="team-card-m2-chip">
+              <span class="team-card-member-name" id="team-card-m2">Integrante 2</span>
+            </div>
+            <div class="team-card-member-chip" id="team-card-m3-chip">
+              <span class="team-card-member-name" id="team-card-m3">Integrante 3</span>
+            </div>
           </div>
         </div>
       </div>
@@ -386,6 +433,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/teamsData.js"></script>
   <script src="/js/display.js"></script>
 </body>
 </html>

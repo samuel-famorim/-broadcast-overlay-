@@ -140,6 +140,7 @@ const sponsorsLt = document.getElementById('sponsors-lt');
 const firstacOverlay = document.getElementById('firstac-overlay');
 const sportsLt = document.getElementById('sports-lt');
 const teamLt = document.getElementById('team-lt');
+const teamCard = document.getElementById('team-card');
 const scoreboard = document.getElementById('firstac-scoreboard');
 const medalTable = document.getElementById('medal-table-overlay');
 const problemStatsOverlay = document.getElementById('problemstats-overlay');
@@ -923,6 +924,17 @@ function showTeamLT(teamName, member1, member2, member3, options) {
   // Textos
   teamLt.querySelector('.team-lt-name').textContent = teamName || '';
 
+  // Badge de universidade e estado no LT (se disponível)
+  const uniBadge = teamLt.querySelector('.team-lt-uni-badge');
+  if (uniBadge) {
+    if (options.university) {
+      uniBadge.textContent = (options.state ? `[${options.state}] ` : '') + options.university;
+      uniBadge.style.display = 'inline-flex';
+    } else {
+      uniBadge.style.display = 'none';
+    }
+  }
+
   // Monta linha de integrantes (pula vazios)
   const members = [member1, member2, member3].filter(m => m && m.trim());
   teamLt.querySelector('.team-lt-members').textContent = members.join('  •  ');
@@ -937,6 +949,93 @@ function hideTeamLT() {
   setTimeout(() => {
     resetOverlay(teamLt);
     teamLt.classList.remove('hiding');
+  }, 350);
+}
+
+// ============================================
+// CARD DE APRESENTAÇÃO DE EQUIPE (Hero Card)
+// ============================================
+
+function showTeamCard(data) {
+  if (!teamCard) return;
+  resetOverlay(teamCard);
+  teamCard.classList.remove('hiding');
+  clearOverlayTimer('teamCard');
+
+  data = data || {};
+  const teamName = data.teamName || data.name || '';
+  const university = data.university || '';
+  const state = (data.state || 'BR').toUpperCase();
+  const m1 = data.m1 || (data.members && data.members[0]) || '';
+  const m2 = data.m2 || (data.members && data.members[1]) || '';
+  const m3 = data.m3 || (data.members && data.members[2]) || '';
+  const logoUrl = data.logoUrl || '/src/sbc_assets/sabia-voando.png';
+  const duration = parseInt(data.duration, 10) || 0;
+
+  // Textos e Logo
+  const nameEl = document.getElementById('team-card-name');
+  if (nameEl) nameEl.textContent = teamName;
+
+  const uniEl = document.getElementById('team-card-university');
+  if (uniEl) uniEl.textContent = university || 'Maratona SBC de Programação';
+
+  const ufEl = document.getElementById('team-card-state-uf');
+  if (ufEl) ufEl.textContent = state;
+
+  const flagImg = document.getElementById('team-card-state-flag');
+  if (flagImg) {
+    flagImg.src = `/assets/flags/${state.toLowerCase()}.svg`;
+    flagImg.onerror = () => { flagImg.src = '/assets/flags/br.svg'; };
+  }
+
+  const logoImg = document.getElementById('team-card-logo');
+  if (logoImg) {
+    logoImg.src = logoUrl;
+    logoImg.onerror = () => { logoImg.src = '/src/sbc_assets/sabia-voando.png'; };
+  }
+
+  // Integrantes (Primeiro e Último nome)
+  const m1El = document.getElementById('team-card-m1');
+  const m1Chip = document.getElementById('team-card-m1-chip');
+  if (m1Chip && m1El) {
+    if (m1) { m1El.textContent = m1; m1Chip.style.display = 'flex'; }
+    else { m1Chip.style.display = 'none'; }
+  }
+
+  const m2El = document.getElementById('team-card-m2');
+  const m2Chip = document.getElementById('team-card-m2-chip');
+  if (m2Chip && m2El) {
+    if (m2) { m2El.textContent = m2; m2Chip.style.display = 'flex'; }
+    else { m2Chip.style.display = 'none'; }
+  }
+
+  const m3El = document.getElementById('team-card-m3');
+  const m3Chip = document.getElementById('team-card-m3-chip');
+  if (m3Chip && m3El) {
+    if (m3) { m3El.textContent = m3; m3Chip.style.display = 'flex'; }
+    else { m3Chip.style.display = 'none'; }
+  }
+
+  teamCard.classList.remove('hidden');
+  teamCard.classList.add('active');
+
+  // Auto-hide opcional com timer
+  if (duration > 0) {
+    activeTimers['teamCard'] = setTimeout(() => {
+      hideTeamCard();
+    }, duration * 1000);
+  }
+}
+
+function hideTeamCard() {
+  if (!teamCard) return;
+  clearOverlayTimer('teamCard');
+  if (!teamCard.classList.contains('active')) return;
+  teamCard.classList.remove('active');
+  teamCard.classList.add('hiding');
+  setTimeout(() => {
+    resetOverlay(teamCard);
+    teamCard.classList.remove('hiding');
   }, 350);
 }
 
@@ -1070,6 +1169,7 @@ socket.on('state-init', (state) => {
   if (ov.ltLeft) showLowerThird('left', ov.ltLeft.name, ov.ltLeft.role, ov.ltLeft.options);
   if (ov.ltRight) showLowerThird('right', ov.ltRight.name, ov.ltRight.role, ov.ltRight.options);
   if (ov.teamLt) showTeamLT(ov.teamLt.teamName, ov.teamLt.m1, ov.teamLt.m2, ov.teamLt.m3, ov.teamLt.options);
+  if (ov.teamCard) showTeamCard(ov.teamCard);
   if (ov.sportsLt) showSportsLT(ov.sportsLt.options);
   if (ov.sponsorsLt) showSponsorsLT(ov.sponsorsLt);
   if (ov.problemLt) showProblemLT(ov.problemLt.letter, ov.problemLt.name, ov.problemLt.acs);
@@ -1097,12 +1197,14 @@ socket.on('show-sports-lt', (data) => showSportsLT(data.options));
 socket.on('hide-sports-lt', () => hideSportsLT());
 socket.on('show-team-lt', (data) => showTeamLT(data.teamName, data.m1, data.m2, data.m3, data.options));
 socket.on('hide-team-lt', () => hideTeamLT());
+socket.on('show-team-card', (data) => showTeamCard(data));
+socket.on('hide-team-card', () => hideTeamCard());
 socket.on('show-sponsors-lt', (data) => showSponsorsLT(data));
 socket.on('hide-sponsors-lt', () => hideSponsorsLT());
 
 socket.on('clear-all', () => {
   [medalOverlay, balloonOverlay, alertOverlay, ltLeft, ltRight, tickerBar, problemLt,
-   contestStart, contestEnd, frozenOverlay, blindOverlay, rankupOverlay, countdownOverlay, firstacOverlay, sportsLt, teamLt, sponsorsLt, scoreboard, medalTable, problemStatsOverlay, commentOverlay].forEach(resetOverlay);
+   contestStart, contestEnd, frozenOverlay, blindOverlay, rankupOverlay, countdownOverlay, firstacOverlay, sportsLt, teamLt, teamCard, sponsorsLt, scoreboard, medalTable, problemStatsOverlay, commentOverlay].forEach(resetOverlay);
   stopFrostEffect();
   stopCountdown();
   particles = [];
